@@ -1,0 +1,18 @@
+{
+    "quotemark": [
+        true,
+        "single",
+        "jsx-double"
+    ],
+    "linterOptions": {
+        "exclude": [
+            "../../../../node_modules",
+            "./node_modules"
+        ]
+    },
+    "no-angle-bracket-type-assertion": false,
+    "rules": {
+        "no-angle-bracket-type-assertion": false,
+        "@typescript-eslint/no-angle-bracket-type-assertion": "off"
+    }
+}

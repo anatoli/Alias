@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#000000" />
+  <!--
+      manifest.json provides metadata used when your web app is installed on a
+      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
+    -->
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+  <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+  <title>React App</title>
+</head>
+
+<body>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
+  <!-- <script type="text/javascript" src="test.js"/> -->
+  <div id="root"></div>
+  <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start` or `yarn start`.
+      To create a production bundle, use `npm run build` or `yarn build`.
+    -->
+  <script>
+    const queryParams = {}
+    location.search
+      .substring(1)
+      .split('&')
+      .filter(qp => qp !== '')
+      .forEach(qp => {
+        const [key, val] = qp.split('=')
+        queryParams[decodeURIComponent(key)] = decodeURIComponent(val)
+      })
+
+    let alertWiFiFlag = true
+
+    const { href, search, hash } = location
+    history.replaceState(null, document.title, href.replace(search, '').replace(hash, ''))
+
+    const platform = queryParams.platform || sessionStorage.getItem('platform') || null
+    if (platform) {
+      sessionStorage.setItem('platform', platform)
+    }
+    const script = document.createElement('script')
+    script.type = 'text/javascript'
+    script.src = platform ? `cordova/${platform}/cordova.js` : `cordova.js`
+    document.body.append(script)
+
+    document.addEventListener("deviceready", onDeviceReady, false);
+
+    async function onDeviceReady() {
+
+      screen.orientation.lock('portrait')
+
+      cordova.plugins.backgroundMode.enable();
+      cordova.plugins.backgroundMode.setDefaults({
+        title: 'RadioFinder',
+        text: "online radio",
+        icon: 'splash-port-ldpi.png',
+        color: '#ffffff',
+        resume: false,
+        hidden: false,
+        bigText: false,
+        silent: true
+      });
+      window.plugins.insomnia.keepAwake()
+
+      function error () {
+        console.warn('An error occured');
+      }
+
+      // window.plugin.backgroundMode.enable();
+      // window.plugins.insomnia.keepAwake();
+
+      document.addEventListener("pause", onPause, false);
+
+      function onPause(){
+        console.log(cordova.plugins.backgroundMode.isActive())
+      }
+
+      document.addEventListener("backbutton", function (e) {
+        e.preventDefault();
+        navigator.notification.confirm("Впевнені, що хочете вийти?", onConfirmExit, "Підтвердження", "Так,Ні");
+      }, false );
+
+      document.addEventListener("resume", function (e) {
+        e.preventDefault();
+        if(window.localStorage.getItem('isPlay') === '1'){
+          navigator.notification.confirm("Продовжити відтворення?", onConfirmReplay, "Підтвердження", "Так,Ні");
+        }
+      }, false );
+
+
+      const adArray = [
+          {
+            adUnitId:'ca-app-pub-8774936490708638/2057056549',
+            containerOfIntegrationId:'native-ad-header',
+            hidden: false
+          },{
+            adUnitId:'ca-app-pub-8774936490708638/4504164010',
+            containerOfIntegrationId:'native-ad-body-1',
+            hidden: true
+          },{
+            adUnitId:'ca-app-pub-8774936490708638/9156627415',
+            containerOfIntegrationId:'native-ad-body-2',
+            hidden: true
+          },{
+            adUnitId:'ca-app-pub-8774936490708638/6747183975',
+            containerOfIntegrationId:'native-ad-body-3',
+            hidden: true
+          },
+      ]
+
+      await admob.start()
+
+      /* start Header native Ad */
+
+      let isFirstLoading = true
+
+      function setShowBanners(){
+         adArray.forEach((el, i)=>{
+          if (!!isFirstLoading){
+            showBanners(el.adUnitId, el.containerOfIntegrationId, el.hidden, i);
+            if(i === adArray.length -1 ){
+              isFirstLoading = false
+            }
+          }
+        })
+      }
+
+      setShowBanners()
+
+      setInterval(()=>{
+        let wrong_connect = new CustomEvent("reload_ad", {
+          detail: {
+            name: 'cat'
+          }
+        })
+        document.dispatchEvent(wrong_connect);
+        setShowBanners()
+        let defScroll = window.scrollY
+        window.scrollTo(0,defScroll+1)
+        window.scrollTo(0,defScroll)
+      }, 1000*60*2)
+
+
+      function showBanners(adUnitId, containerOfIntegrationId, hidden) {
+        let isAd = false
+        const ad = new admob.NativeAd({
+          adUnitId: adUnitId,
+        })
+
+        ad.on('load', (evt) => {
+          isAd = true
+          if(document.getElementById(containerOfIntegrationId)){
+            if(!hidden) {
+              ad.showWith(document.getElementById(containerOfIntegrationId))
+            }
+          }
+          if(hidden){
+            let node = document.getElementById(containerOfIntegrationId)
+            node.style.display = 'block'
+          }
+          ad.show({
+            x: r.x,
+            y: r.y,
+            width: r.width,
+            height: r.height,
+          })
+        })
+
+        document.addEventListener('wrong_connection', async ()=>{
+          ad.hide()
+        })
+
+        document.addEventListener('reload_ad', async ()=>{
+          ad.hide()
+        })
+
+        ad.on('loadfail', async (evt) => {
+          isAd = false;
+          ad.hide()
+          setTimeout(()=>{
+            showBanners(adUnitId, containerOfIntegrationId, hidden)
+          }, 30000)
+        })
+
+        ad.on('showfail', (evt)=>{
+          ad.hide()
+        })
+        ad.load()
+        const r = document.getElementById(containerOfIntegrationId).getBoundingClientRect()
+
+        window.addEventListener('scroll', function(e) {
+          if(hidden){
+            let header = document.querySelector("header").getBoundingClientRect()
+            let header_bottom_position = header.y + header.height
+
+            let footer = document.querySelector("footer")
+            let footer_top_position = !!footer ? footer.getBoundingClientRect().y : false
+
+            let el =  document.querySelector("#"+containerOfIntegrationId)
+
+            let el_y_position = el.getBoundingClientRect()
+            let footer_var = !!footer_top_position ? ((el_y_position.y + el_y_position.height) > footer_top_position) : false
+
+            if((el_y_position.y < header_bottom_position) || footer_var){
+              !!isAd ? ad.hide() : ''
+            } else {
+              if(document.getElementById(containerOfIntegrationId).style.display === 'block'){
+                const r = document.getElementById(containerOfIntegrationId).getBoundingClientRect()
+                !!isAd ? ad.show({
+                  x: r.x,
+                  y: r.y,
+                  width: r.width,
+                  height: r.height,
+                }) : ''
+              }
+            }
+          }
+        })
+
+        return ad
+      }
+
+      setInterval(()=>{
+        console.log('screen unlock')
+        checkConnection()
+      },15000)
+
+      function onConfirmExit(button) {
+        if(button==2){ //If User select a No, then return back;
+          return;
+        }else{
+          cordova.plugins.backgroundMode.disable();
+          console.log('app exiting')
+          navigator.app.exitApp(); // If user select a Yes, quit from the app.
+        }
+      }
+      function onConfirmReplay(button) {
+        if(button==2){ //If User select a No, then return back;
+          let evt = new CustomEvent("onDismissReplay", {
+            detail: {
+              name: 'cat'
+            }
+          })
+          document.dispatchEvent(evt);
+        }else{
+          let evt = new CustomEvent("onConfirmReplay", {
+            detail: {
+              name: 'cat'
+            }
+          })
+
+          document.dispatchEvent(evt);
+        }
+      }
+    }
+
+    let currentNetvorState = ''
+
+    function checkConnection() {
+      let isChanged = false
+      let networkState = navigator.connection.type;
+      if(navigator.connection.type !== currentNetvorState){
+        if(currentNetvorState !== ""){
+          isChanged = true
+        }
+        currentNetvorState = navigator.connection.type
+      }
+      if(networkState !=='none' && isChanged){
+        reloadPage()
+      }
+      networkState === 'none' ? setInformationAlert() :''
+
+    }
+    checkConnection()
+
+    function alertDismissed() {
+      alertWiFiFlag = true
+
+      let wrong_connect = new CustomEvent("wrong_connection", {
+        detail: {
+          name: 'cat'
+        }
+      })
+      document.dispatchEvent(wrong_connect);
+
+
+      setTimeout(reloadPage(),5000)
+    }
+
+    function reloadPage(){
+      window.location.reload();
+    }
+
+
+    function setInformationAlert(){
+      if(navigator.notification && navigator.notification.alert && alertWiFiFlag){
+        window.localStorage.setItem('isPlay', "0")
+        alertWiFiFlag = false;
+        navigator.notification.alert("Відсутне підключення до Інтернету. Будь ласка перевірте ваше підключення до Мобільної Мережі чи WiFi.", alertDismissed, "Підтвердження", "Так");
+      }
+    }
+
+  </script>
+</body>
+
+</html>

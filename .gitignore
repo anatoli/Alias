@@ -1,0 +1,6 @@
+# Project exclude paths
+/node_modules/
+/platforms/
+# Project exclude paths
+/plugins/admob-plus-cordova/scripts/iosNSAppTransportSecurity.js
+/plugins/admob-plus-cordova/scripts/util.js

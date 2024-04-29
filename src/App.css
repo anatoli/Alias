@@ -1,0 +1,98 @@
+.App {
+    text-align: center;
+    height: calc(100vh - 56px);
+}
+
+.App-logo {
+    animation: App-logo-spin infinite 20s linear;
+    height: 40vmin;
+    pointer-events: none;
+}
+
+.App-header {
+    background-color: #bec3ce;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(10px + 2vmin);
+    color: white;
+}
+
+.App-link {
+    color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.event {
+    display: block;
+    border-radius: 4px;
+    -webkit-border-radius: 4px;
+    color: #FFFFFF;
+    font-size: 12px;
+    margin: 0px 30px;
+    padding: 8px;
+}
+
+.event.listening {
+    background-color: #333333;
+}
+
+.event.received {
+    background-color: #4B946A;
+}
+
+@keyframes fade {
+    from { opacity: 1.0; }
+    50% { opacity: 0.4; }
+    to { opacity: 1.0; }
+}
+
+@-webkit-keyframes fade {
+    from { opacity: 1.0; }
+    50% { opacity: 0.4; }
+    to { opacity: 1.0; }
+}
+
+.blink {
+    animation: fade 3000ms infinite;
+    -webkit-animation: fade 3000ms infinite;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+.circularWrapper{
+    width: 100%;
+    height: 100%;
+}
+
+.background{
+    background-image: url("./img/bg_of_games.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    height: 100vh;
+    width: 100vw;
+}
+
+.bg-title{
+    position: absolute;
+    top: 50vh;
+    transform: translate(0, -50%);
+    width: 100vw;
+}
+.bg-title>h1{
+    float: left;
+    margin-left: 10%;
+    font-size: 50px;
+}

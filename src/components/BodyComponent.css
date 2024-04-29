@@ -1,0 +1,37 @@
+.btn-custom{
+    min-width: 37vh;
+    height: 5rem;
+    border-radius: 50px;
+    background-color: var(--yellow-alias);
+    margin-bottom: 20px;
+    font-size: 58px;
+}
+.btn-custom-category{
+    min-width: 30vh;
+    font-size: 58px;
+    margin: 20px;
+}
+.MuiMobileStepper-root{
+    background-color: transparent !important;
+    justify-content: center !important;
+}
+.MuiMobileStepper-dots{
+    display: none !important;
+}
+.mobile-stepper-btn-category{
+    font-size: 20px !important;
+}
+.mobile-stepper-btn-category--right{
+    float: right;
+}
+.mobile-stepper-btn-category--left{
+    float: left;
+}
+
+.body-wrapper{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    height: inherit;
+}

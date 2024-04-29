@@ -1,0 +1,88 @@
+{
+  "name": "radiofinder",
+  "displayName": "RadioFinder",
+  "version": "1.4.0",
+  "description": "RadioFinder",
+  "main": "index.js",
+  "scripts": {
+    "start": "node assets/scripts/start-dev.js",
+    "cra:start": "react-scripts start",
+    "cra:build": "react-scripts build",
+    "cra:test": "react-scripts test",
+    "cra:eject": "react-scripts eject",
+    "emulator": "cordova clean && cordova run android --emulator",
+    "browser:build": "cordova clean && cordova build browser"
+  },
+  "keywords": [
+    "ecosystem:cordova"
+  ],
+  "author": "Anatoli Arynovich",
+  "license": "MIT",
+  "dependencies": {
+    "@fontsource/roboto": "^4.5.3",
+    "@material-ui/core": "^4.12.3",
+    "@material-ui/icons": "^4.11.2",
+    "@material-ui/lab": "^4.0.0-alpha.60",
+    "@material-ui/styles": "^4.11.4",
+    "@typescript-eslint/eslint-plugin": "^4.31.2",
+    "admob-plus-cordova": "1.28.0",
+    "admob-plus-cordova-native": "0.3.0",
+    "cordova": "^12.0.0",
+    "jest-diff": "^25.5.0",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "save": "^2.5.0"
+  },
+  "devDependencies": {
+    "@types/cordova": "0.0.34",
+    "@types/jest": "24.0.13",
+    "@types/node": "12.0.4",
+    "@types/react": "16.8.19",
+    "@types/react-dom": "16.8.4",
+    "@types/webpack-env": "^1.13.9",
+    "cordova-android": "^12.0.0",
+    "cordova-browser": "^6.0.0",
+    "cordova-lib": "^11.0.0",
+    "cordova-plugin-background-mode-alwaysmkt": "^0.7.3",
+    "cordova-plugin-device": "^2.1.0",
+    "cordova-plugin-dialogs": "^2.0.2",
+    "cordova-plugin-insomnia": "github:EddyVerbruggen/Insomnia-PhoneGap-Plugin",
+    "cordova-plugin-screen-orientation": "^3.0.2",
+    "cordova-support-android-plugin": "~2.0.4",
+    "es6-promise-plugin": "^4.2.2",
+    "ngrok": "^3.1.1",
+    "react-scripts": "^5.0.1",
+    "tslint": "^5.17.0",
+    "typescript": "3.5.1",
+    "ws": "^7.0.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "cordova": {
+    "plugins": {
+      "cordova-plugin-screen-orientation": {},
+      "cordova-plugin-dialogs": {},
+      "cordova-plugin-background-mode": {},
+      "cordova-plugin-insomnia": {},
+      "admob-plus-cordova": {
+        "APP_ID_ANDROID": "ca-app-pub-8774936490708638~4881147544",
+        "PLAY_SERVICES_VERSION": "20.6.0"
+      },
+      "admob-plus-cordova-native": {}
+    },
+    "platforms": [
+      "browser",
+      "android"
+    ]
+  }
+}

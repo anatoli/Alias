@@ -1,0 +1,54 @@
+@font-face {
+  font-family: "DR_Agu_W00";
+  src: url("./fonts/DR_Agu_W00_Regular.ttf") format("opentype"),
+  url("./fonts/DR_Agu_W00_Regular.woff") format("opentype")
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'DR_Agu_W00', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: flex;
+  align-items: center;
+
+  background: rgb(0,0,0);
+  background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(52,58,64,1) 22%, rgba(134,135,135,1) 100%);
+}
+
+h1, h2,h3,h4,h5, button,button, button>span, p, .MuiButton-root {
+  font-family: -apple-system, BlinkMacSystemFont, 'DR_Agu_W00', sans-serif !important;
+  color: var(--pink-alias) !important;
+  text-shadow: 4px 0 #00000085, 0 1px #00000085, 1px 0 #00000085, 0 -1px #00000085 !important;
+}
+.global-fonts{
+  font-family: -apple-system, BlinkMacSystemFont, 'DR_Agu_W00', sans-serif !important;
+  color: var(--pink-alias) !important;;
+  text-shadow: 4px 0 #00000085, 0 1px #00000085, 1px 0 #00000085, 0 -1px #00000085 !important;
+}
+
+@media screen and (max-width: 899px){
+  body{
+    justify-content: space-between;
+  }
+}
+
+@media screen and (min-width: 898px){
+  body{
+    justify-content: center;
+  }
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  monospace;
+}
+
+:root{
+  --yellow-alias: #ffde3f;
+  --pink-alias: #f87ba7
+}
+
+*:focus {
+  outline: none;
+}

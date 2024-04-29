@@ -1,0 +1,35 @@
+<?xml version='1.4.0' encoding='utf-8'?>
+<widget android-packageName="com.AAA.Alias" id="com.AAA.Alias" version="1.4.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <icon density="mdpi" height="57" platform="android" src="src/img/res/icon.png" width="57" />
+    <name>Alias SP</name>
+    <description>
+        The game to cheer up in a big company
+    </description>
+    <author email="anatoli7383@gmail.com" href="#">
+        Anatoli Arynovich
+    </author>
+    <content src="index.html" />
+    <hook src="assets/hooks/collect-app-info.js" type="after_prepare" />
+    <hook src="assets/hooks/run-dev.js" type="before_build" />
+    <hook src="assets/hooks/run-dev.js" type="before_run" />
+    <hook src="assets/hooks/run-prod.js" type="before_build" />
+    <hook src="assets/hooks/run-prod.js" type="before_run" />
+    <access origin="*" />
+    <allow-navigation href="http://*/*" />
+    <allow-navigation href="https://*/*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="tel:*" />
+    <allow-intent href="sms:*" />
+    <allow-intent href="mailto:*" />
+
+    <allow-intent href="geo:*" />
+    <platform name="android">
+        <allow-intent href="market:*" />
+    </platform>
+    <platform name="ios">
+        <allow-intent href="itms:*" />
+        <allow-intent href="itms-apps:*" />
+    </platform>
+    <preference name="AndroidWindowSplashScreenAnimatedIcon" value="res/screen/android/splashscreen.xml" />
+</widget>
