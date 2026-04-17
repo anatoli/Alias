@@ -16,7 +16,7 @@
     overflow-y: scroll;
     border-radius: 20px;
 }
-.setting h1{
+.setting h1, .setting h2{
     margin-top: 0px;
     margin-bottom: 0px;
     height: 1em;
@@ -29,7 +29,7 @@
     justify-content: space-evenly;
 }
 .team-list, .info-block{
-    padding: 30px 0;
+    padding: 20px 0;
 }
 
 .info-block.btn{
@@ -37,8 +37,8 @@
     width: 0;
 }
 
-.info-block.btn h1{
-    font-size: 3em;
+.info-block.btn h1, .info-block.btn h2{
+    font-size: 2em;
     line-height: 0.5;
     position: absolute;
     bottom: 0;
@@ -48,13 +48,13 @@
     box-shadow: 0px 10px 9px 4px rgba(0,0,0,0.75);
 }
 
-.info-block h1{
+.info-block h1, .info-block h2{
     border: 1px solid #7e6900;
     border-radius: 20px;
     padding: 16px;
 }
 
-.info-block h1.active{
+.info-block h1.active, .info-block h2.active{
     background-color: #FFFFFF;
     box-shadow: 0px 10px 9px 4px rgba(0,0,0,0.75);
 }
@@ -63,7 +63,7 @@
     width: 75%;
     background: transparent;
     border: none;
-    font-size: 2em;
+    font-size: 44px;
     border-bottom: 2px solid var(--pink-alias);
     box-shadow: 0px -1 transparent, 0 2px var(--pink-alias), 0px 0 var(--pink-alias), 0 0px var(--pink-alias)!important;
 }
@@ -79,7 +79,7 @@
     display: flex;
     justify-content: space-between;
     width: 100%;
-    margin-top: -34px;
+    margin-top: -28px;
 }
 title-block.teams .title{
     position: absolute;
@@ -101,24 +101,30 @@ title-block.teams .title{
 }
 .settings-block.btn-start{
     background-color: #FFFFFF;
-    font-size: 3em;
+    font-size: 2em;
     height: 11vh;
     min-height: 8vh;
     align-items: center;
     justify-content: center;
     box-shadow: 0px 10px 9px 4px rgba(0,0,0,0.75);
 }
-.settings-block.btn-start h1{
+.settings-block.btn-start h1, .settings-block.btn-start h2{
     margin: 0;
 }
 
-h1.add-team{
-    background-color: #FFFFFF;
-    box-shadow: 0px 10px 9px 4px rgba(0,0,0,0.75);
-    border: 1px solid #7e6900;
+.add-team p{
     border-radius: 20%;
-    padding: 8px 20px;
     line-height: 1;
-    position: absolute;
-    right: 5vw;
+    margin: 0;
+}
+
+.add-team p img{
+    width: 64px;
+}
+
+.setting-game-play-btn{
+    display: flex;
+    justify-content: space-evenly;
+    position: relative;
+    right: 3vh;
 }

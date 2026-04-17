@@ -20,6 +20,7 @@ h1, h2,h3,h4,h5, button,button, button>span, p, .MuiButton-root {
   font-family: -apple-system, BlinkMacSystemFont, 'DR_Agu_W00', sans-serif !important;
   color: var(--pink-alias) !important;
   text-shadow: 4px 0 #00000085, 0 1px #00000085, 1px 0 #00000085, 0 -1px #00000085 !important;
+  font-weight: 500;
 }
 .global-fonts{
   font-family: -apple-system, BlinkMacSystemFont, 'DR_Agu_W00', sans-serif !important;
@@ -46,7 +47,8 @@ code {
 
 :root{
   --yellow-alias: #ffde3f;
-  --pink-alias: #f87ba7
+  --pink-alias: #f87ba7;
+  --purpul-alias: #804cd4
 }
 
 *:focus {

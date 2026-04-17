@@ -4,7 +4,6 @@
     min-width: 25vw;
 }
 .results .word-row h3{
-    font-size: 4em;
 }
 
 .word-row.header{
@@ -13,7 +12,6 @@
 }
 
 .word{
-    font-size: 4em;
     color: #FFFFFF !important;
 }
 
@@ -116,7 +114,6 @@ input:checked + .slider:before {
 }
 
 .results .btn>h1{
-    font-size: 6em;
     line-height: 1;
     margin: 0;
     padding: 0;
@@ -141,11 +138,11 @@ input:checked + .slider:before {
 }
 
 .result-counter{
-    font-size: 3em;
     width: 35%;
     display: flex;
     flex-flow: column;
     justify-content: space-evenly;
+    gap: 20px;
 }
 
 .result-counter .false{

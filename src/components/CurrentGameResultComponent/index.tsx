@@ -1,4 +1,6 @@
 import React from "react";
+import {playSound} from "../utils";
+import ModalWindowComponent from "../ModalWindowComponent";
 import '../../App.css';
 import '../BodyComponent.css';
 
@@ -14,7 +16,9 @@ interface CurrentGameResultProps {
 
 interface CurrentGameResultState {
     teams : {},
-    WINNER: boolean
+    WINNER: boolean,
+    openWinnerModal: boolean,
+    teamWinner:string
 }
 
 class CurrentGameResultComponent extends React.PureComponent <CurrentGameResultProps, CurrentGameResultState> {
@@ -23,17 +27,27 @@ class CurrentGameResultComponent extends React.PureComponent <CurrentGameResultP
 
         this.state = {
             teams : {},
-            WINNER: false
+            WINNER: false,
+            openWinnerModal: false,
+            teamWinner: ''
         }
     }
 
+    playSound = playSound
+
     componentDidMount() {
-        // @ts-ignore
-        let teams = JSON.parse(localStorage.getItem('results'))
-        Object.values(teams).map((el:any)=>{
+        let teams: any = {}
+        try {
+            const raw = localStorage.getItem('results')
+            teams = raw ? JSON.parse(raw) : {}
+        } catch {
+            teams = {}
+        }
+
+        Object.values(teams).forEach((el:any)=>{
             if(el.trues >= this.props.wordsToFinish){
-                this.setState({WINNER: true})
-                alert(el.name + "is WINNER!!!")
+                this.setState({WINNER: true, teamWinner: el.name, openWinnerModal:true})
+                this.playSound('victory')
             }
         })
         this.setState({teams: teams})
@@ -52,19 +66,26 @@ class CurrentGameResultComponent extends React.PureComponent <CurrentGameResultP
         this.props.onRestart()
     }
 
+    winnerModalClose = () => {
+        this.setState({openWinnerModal:false});
+    };
+
     render() {
-        const {teams, WINNER}= this.state
+        const {teams, WINNER, teamWinner, openWinnerModal}= this.state
         return(
             <div className={'results'}>
+                <div>
+                    <ModalWindowComponent open={openWinnerModal} title={'WINNER'} message={teamWinner} onFinishModalWindow={this.winnerModalClose}/>
+                </div>
                 <div className={'results-wrapper'}>
                     <div className={'word-row header'}>
                         <h1 className={'word'}>Name</h1>
                         <div className={'buttons-wrapper'}>
                             <div className={'buttons'}>
-                                <h3>True</h3>
+                                <h1>True</h1>
                             </div>
                             <div className={'buttons'}>
-                                <h3>Wrong</h3>
+                                <h1>Wrong</h1>
                             </div>
                         </div>
 
@@ -74,10 +95,10 @@ class CurrentGameResultComponent extends React.PureComponent <CurrentGameResultP
                             <h1 className={'word'}>{el.name}</h1>
                             <div className={'buttons-wrapper'}>
                                 <div className={'buttons'}>
-                                        <h3>{el.trues}</h3>
+                                        <h1>{el.trues}</h1>
                                 </div>
                                 <div className={'buttons'}>
-                                        <h3>{el.wrong}</h3>
+                                        <h1>{el.wrong}</h1>
                                 </div>
                             </div>
                         </div>
@@ -89,7 +110,7 @@ class CurrentGameResultComponent extends React.PureComponent <CurrentGameResultP
                         <div className={'btn'} onClick={this.onNext}><h1>Next</h1></div>
                     }
                 </div>
-            </div>
+    </div>
         )
     }
 }

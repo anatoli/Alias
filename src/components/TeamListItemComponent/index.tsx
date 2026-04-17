@@ -10,6 +10,7 @@ interface TeamListItemProps {
     name: string,
     index: number
     delete?: any
+    deleteAvailable?: boolean
     onChange?: any
 }
 
@@ -39,13 +40,13 @@ class TeamListItemComponent extends React.PureComponent <TeamListItemProps, Team
     }
 
     render() {
-        const { name, index } = this.props
+        const { name, index, deleteAvailable } = this.props
         return (
             <div className={'team-list-items-wrapper'} key={name + index}>
                 <input maxLength={13} readOnly={!this.props.onChange} className={'global-fonts'} type="text" defaultValue={name} onChange={(node)=>{
                     this.changeNameOfTeam(node, index)
                 }}/>
-                {!!this.props.delete &&
+                {(!!this.props.delete && deleteAvailable) &&
                     <h1 onClick={(node)=> this.removeTeam(index)}>-</h1>
                 }
             </div>

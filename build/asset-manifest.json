@@ -1,15 +1,23 @@
 {
   "files": {
-    "main.css": "/static/css/main.eee0dd78.css",
-    "main.js": "/static/js/main.a5e1b2f6.js",
+    "main.css": "/static/css/main.d87a28e4.css",
+    "main.js": "/static/js/main.19719022.js",
+    "static/media/bg_of_games.jpg": "/static/media/bg_of_games.1782ee76ee2c92e8f35d.jpg",
+    "static/media/pobeda.mp3": "/static/media/pobeda.fffba213156fd3bcc4ea.mp3",
+    "static/media/DR_Agu_W00_Regular.ttf": "/static/media/DR_Agu_W00_Regular.6cdeadf4eed40977fc8c.ttf",
+    "static/media/DR_Agu_W00_Regular.woff": "/static/media/DR_Agu_W00_Regular.57ced4b527b1f42f052d.woff",
+    "static/media/error.mp3": "/static/media/error.aafb295bae312dfb6a5a.mp3",
+    "static/media/confirm.mp3": "/static/media/confirm.2c5341e279a921ed0c6c.mp3",
+    "static/media/settings_btn.png": "/static/media/settings_btn.1c819985874d7b0ee783.png",
+    "static/media/add_btn.png": "/static/media/add_btn.1486696d49629980c6e3.png",
+    "static/media/tick.mp3": "/static/media/tick.5131c56ea28ca3e8e67b.mp3",
+    "static/media/click.mp3": "/static/media/click.78029fd56eacca083bc3.mp3",
     "index.html": "/index.html",
-    "static/media/mark.svg": "/static/media/mark.020c474d56716b081f189575183497c0.svg",
-    "static/media/Magnifier.svg": "/static/media/Magnifier.8ae79e9f897c125f20cce59d6bf1ccb3.svg",
-    "main.eee0dd78.css.map": "/static/css/main.eee0dd78.css.map",
-    "main.a5e1b2f6.js.map": "/static/js/main.a5e1b2f6.js.map"
+    "main.d87a28e4.css.map": "/static/css/main.d87a28e4.css.map",
+    "main.19719022.js.map": "/static/js/main.19719022.js.map"
   },
   "entrypoints": [
-    "static/css/main.eee0dd78.css",
-    "static/js/main.a5e1b2f6.js"
+    "static/css/main.d87a28e4.css",
+    "static/js/main.19719022.js"
   ]
 }
