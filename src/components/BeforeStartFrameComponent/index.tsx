@@ -53,13 +53,13 @@ class BeforeStartFrameComponent extends React.PureComponent <BeforeStartFramePro
                     ))}
                 </div>
                 <div>
-                    <div className={'settings-block btn-start'}>
-                        <h1 onClick={this.play}>Play</h1>
+                    <div onClick={this.play} className={'settings-block btn-start'}>
+                        <h1>Play</h1>
                     </div>
                 </div>
                 <div>
-                    <div className={'settings-block btn-start'}>
-                        <h1 onClick={this.back}>Back</h1>
+                    <div onClick={this.back} className={'settings-block btn-start'}>
+                        <h1>Back</h1>
                     </div>
                 </div>
             </div>

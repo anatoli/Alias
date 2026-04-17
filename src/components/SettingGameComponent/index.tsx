@@ -4,15 +4,20 @@ import '../BodyComponent.css';
 
 import './index.css'
 import TeamListItemComponent from "../TeamListItemComponent";
+import {playSound} from "../utils";
 
+import addIcon from '../../img/btn/add_btn.png'
+import settingsIcon from '../../img/btn/settings_btn.png'
+import ModalSettingsComponent from "./Modal-Settings-Window";
 
 
 interface SettingGameProps {
-    onStartGame:(any);
-    settings:{
+    onStartGame: (any);
+    settings: {
         time: number,
         hardLevel: string,
         teams: any[],
+        categories: any[],
         wordsToFinish: number
         showingFrame: string | undefined,
     }
@@ -22,13 +27,15 @@ interface SettingGameState {
     time: number,
     hardLevel: string,
     teams: any[],
+    categories: any[],
     wordsToFinish: number
+    modalSettingsIsOpen: boolean
     showingFrame: string | undefined,
 
 }
 
 class SettingGameComponent extends React.PureComponent <SettingGameProps, SettingGameState> {
-    constructor(props:any) {
+    constructor(props: any) {
         super(props);
 
         this.state = {
@@ -36,11 +43,15 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
             time: this.props.settings.time,
             hardLevel: this.props.settings.hardLevel,
             teams: this.props.settings.teams,
-            wordsToFinish: this.props.settings.wordsToFinish
+            categories: this.props.settings.categories,
+            wordsToFinish: this.props.settings.wordsToFinish,
+            modalSettingsIsOpen: false
         }
 
 
     }
+
+    playSound = playSound
 
     componentDidMount() {
     }
@@ -53,42 +64,40 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
 
     }
 
-    changeTime(param:number){
-        this.setState({time:param})
-    }
-
-    changeWordsToFinish(param:number){
-        this.setState({wordsToFinish:param})
-    }
-
-    changeHardLevel(param:string){
-        this.setState({hardLevel:param})
-    }
     addTeam = () => {
-        if(this.state.teams.length < 10){
+        this.playSound('click');
+        if (this.state.teams.length < 10) {
             const array = new Array()
             this.state.teams.map(el => array.push(el))
-            array.push({name: "Player " + (array.length+1)})
+            array.push({name: "Player " + (array.length + 1)})
             this.setState({teams: array})
         }
     }
 
-    removeTeam = (i:number) => {
+    openModalSettings = () => {
+        this.setState({modalSettingsIsOpen:true})
+    }
+    closeModalSettings = (settings:any) => {
+        this.setState({modalSettingsIsOpen:false, ...settings})
+    }
+
+    removeTeam = (i: number) => {
+        this.playSound('click');
         const array = new Array()
         this.state.teams.map(el => array.push(el))
         this.cleanStorage(array[i].name)
-        array.splice(i,1)
+        array.splice(i, 1)
         this.setState({teams: array})
     }
 
-    changeNameOfTeam = (newName:any, i:number) => {
+    changeNameOfTeam = (newName: any, i: number) => {
         const array = new Array()
         this.state.teams.map(el => array.push(el))
         this.cleanStorage(array[i].name)
         array[i].name = newName
     }
 
-    cleanStorage(key:string){
+    cleanStorage(key: string) {
         localStorage.removeItem(key)
     }
 
@@ -100,55 +109,27 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
                 <div className={'setting'}>
                     <div className={'settings-block'}>
                         <div className={'title-block'}>
-                            <h1 className='title'>Teams:</h1>
-                            <h1 className={'add-team'} onClick={this.addTeam}>+</h1>
+                            <h2 className='title'>Teams:</h2>
+                            <div className={'setting-game-play-btn add-team'}>
+                                <p onClick={this.addTeam}><img src={addIcon}/></p>
+                                <p onClick={this.openModalSettings}><img src={settingsIcon}/></p>
+                            </div>
+
                         </div>
                         <div className={'team-list'}>
-                            {teams.map((el, i)=> (
-                                <TeamListItemComponent name={el.name} index={i} delete={this.removeTeam} onChange={this.changeNameOfTeam}/>
+                            {teams.map((el, i) => (
+                                <TeamListItemComponent name={el.name} index={i} delete={this.removeTeam} deleteAvailable={teams.length > 2}
+                                                       onChange={this.changeNameOfTeam}/>
                             ))}
                         </div>
                     </div>
-                    <div className={'settings-block'}>
-                        <div className={'title-block'}>
-                            <h1 className='title'>Time</h1>
-                        </div>
-                        <div className={'info-block'}>
-                            <h1 className={`${this.state.time == 10 ? 'active' : ''}`} onClick={(node)=> this.changeTime(10)}>30s</h1>
-                            <h1 className={`${this.state.time == 60 ? 'active' : ''}`} onClick={(node)=> this.changeTime(60)}>60s</h1>
-                            <h1 className={`${this.state.time == 90 ? 'active' : ''}`} onClick={(node)=> this.changeTime(90)}>90s</h1>
-                        </div>
-
-                    </div>
-                    <div className={'settings-block'}>
-                        <div className={'title-block'}>
-                            <h1 className='title'>Level</h1>
-                        </div>
-                        <div className={'info-block'}>
-                            <h1 className={`${this.state.hardLevel == 'EASY' ? 'active' : ''}`} onClick={(node)=> this.changeHardLevel('EASY')}>Easy</h1>
-                            <h1 className={`${this.state.hardLevel == 'NORMAL' ? 'active' : ''}`} onClick={(node)=> this.changeHardLevel('NORMAL')}>Normal</h1>
-                            <h1 className={`${this.state.hardLevel == 'HARD' ? 'active' : ''}`} onClick={(node)=> this.changeHardLevel('HARD')}>Hard</h1>
-                        </div>
-
-                    </div>
-                    <div className={'settings-block'}>
-                        <div className={'title-block'}>
-                            <h1 className='title'>Words</h1>
-                        </div>
-                        <div className={'info-block'}>
-                            <h1 className={`${this.state.wordsToFinish == 30 ? 'active' : ''}`} onClick={(node)=> this.changeWordsToFinish(30)}>30</h1>
-                            <h1 className={`${this.state.wordsToFinish == 60 ? 'active' : ''}`} onClick={(node)=> this.changeWordsToFinish(60)}>60</h1>
-                            <h1 className={`${this.state.wordsToFinish == 90 ? 'active' : ''}`} onClick={(node)=> this.changeWordsToFinish(90)}>90</h1>
-                        </div>
-
-                    </div>
                 </div>
                 <div>
-                    <div className={'settings-block btn-start'}>
-                        <h1 onClick={this.start}>Start</h1>
+                    <div onClick={this.start} className={'settings-block btn-start'}>
+                        <h2>Start</h2>
                     </div>
                 </div>
-
+                <ModalSettingsComponent settings={this.props.settings} open={this.state.modalSettingsIsOpen} onFinishModalWindow={this.closeModalSettings}/>
             </>
 
 

@@ -31,11 +31,18 @@ class ListWordsComponent extends React.PureComponent <ListWordsProps, ListWordsS
 
 
     componentDidMount() {
-
-        let key: any = localStorage.getItem('currentTeam')
-
-        // @ts-ignore
-        this.setState({list: JSON.parse(localStorage.getItem(key))})
+        const key = localStorage.getItem('currentTeam') || ''
+        const raw = key ? localStorage.getItem(key) : null
+        let parsed: any = null
+        try {
+            parsed = raw ? JSON.parse(raw) : null
+        } catch {
+            parsed = null
+        }
+        const safeList = parsed && typeof parsed === 'object'
+            ? parsed
+            : { team: key, listWords: {} }
+        this.setState({list: safeList})
     }
 
 
@@ -58,9 +65,14 @@ class ListWordsComponent extends React.PureComponent <ListWordsProps, ListWordsS
     }
 
     onNext = () => {
-        let key: any = localStorage.getItem('currentTeam')
-        // @ts-ignore
-        let results: { [n: strng]: { name: string, trues: number, wrong: number } } = JSON.parse(localStorage.getItem('results'))
+        const key: string = localStorage.getItem('currentTeam') || ''
+        let results: { [name: string]: { name: string, trues: number, wrong: number } } | null = null
+        try {
+            const raw = localStorage.getItem('results')
+            results = raw ? JSON.parse(raw) : null
+        } catch {
+            results = null
+        }
 
         const {listWords} = this.state.list
         let words = Object.keys(listWords).length
@@ -111,7 +123,6 @@ class ListWordsComponent extends React.PureComponent <ListWordsProps, ListWordsS
                             <h1 className={'word'}>{el}</h1>
                             <div className={'buttons'}>
                                 <label className="switch">
-                                    // @ts-ignore
                                     <input type="checkbox" onClick={() => this.changeStatus(el)}
                                         // @ts-ignore
                                            checked={listWords[el]}/>
@@ -132,7 +143,9 @@ class ListWordsComponent extends React.PureComponent <ListWordsProps, ListWordsS
                             <h3>{words.length - truescounter}</h3>
                         </div>
                     </div>
-                    <div className={'btn'} onClick={this.onNext}><h1>Next</h1></div>
+                    <div className={'btn'} onClick={this.onNext}>
+                        <h1>Next</h1>
+                    </div>
                 </div>
             </div>
         )

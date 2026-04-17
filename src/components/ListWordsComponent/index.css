@@ -7,7 +7,7 @@
 }
 
 .word{
-    font-size: 4em;
+    font-size: 3em;
     color: #FFFFFF !important;
 }
 
@@ -26,8 +26,9 @@
 .word-list-wrapper{
     width: 80vw;
     overflow: auto;
-    height: 80vh;
+    height: calc(80vh - 4vw);
     padding: 2vw 0;
+
 }
 
 /* The switch - the box around the slider */
@@ -107,7 +108,7 @@ input:checked + .slider:before {
 }
 
 .word-list .btn>h1{
-    font-size: 6em;
+    font-size: 4em;
     line-height: 1;
     margin: 0;
     padding: 0;
@@ -117,7 +118,7 @@ input:checked + .slider:before {
     display: flex;
     width: 100vw;
     justify-content: space-around;
-    min-height: 20vh;
+    min-height: calc(20vh - 4vw);;
     align-items: center;
     background-color: #804cd4bf;
     border-top: 1px solid #80008082;
@@ -132,7 +133,7 @@ input:checked + .slider:before {
 }
 
 .result-counter{
-    font-size: 3em;
+    font-size: 2em;
     width: 35%;
     display: flex;
     flex-flow: column;
@@ -144,6 +145,12 @@ input:checked + .slider:before {
 }
 .result-counter .trues h2{
     color: var(--yellow-alias) !important;
+}
+
+.result-counter h2, .result-counter h3{
+    margin-top: 0;
+    margin-bottom: 0;
+    gap: 20px;
 }
 
 .trues, .false{

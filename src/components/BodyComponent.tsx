@@ -7,6 +7,30 @@ import TimerComponent from "./TimerComponent";
 import GameFrameComponent from "./GameFrameComponent";
 import ListWordsComponent from "./ListWordsComponent";
 import CurrentGameResultComponent from "./CurrentGameResultComponent";
+import {playSound} from "./utils";
+import ButtonComponent from "./ButtonComponent";
+
+type ExpatCategory =
+    | 'Bureaucracy'
+    | 'Work'
+    | 'German Language'
+    | 'Transport'
+    | 'Social Life'
+    | 'Stereotypes'
+    | 'Expat Life'
+    | 'Cringe Situations'
+    | 'IT / Tech'
+    | 'Absurd / Meme'
+import VolumeMuteIcon from '@material-ui/icons/VolumeMute';
+import VolumeOffIcon from '@material-ui/icons/VolumeOff';
+import VolumeOffOutlinedIcon from '@material-ui/icons/VolumeOffOutlined'
+import SettingsIcon from '@material-ui/icons/Settings';
+
+import MusicNoteIcon from '@material-ui/icons/MusicNote';
+import MusicOffIcon from '@material-ui/icons/MusicOff';
+import {Button, Menu, MenuItem} from '@material-ui/core';
+// @ts-ignore
+import bgMusicSrc from "../res/audio/bg_sound.mp3"
 
 
 
@@ -16,11 +40,16 @@ interface BodyComponentProps {
 interface BodyComponentState {
 
     showingFrame: string | undefined,
+    menuSettingsIsOpen: boolean,
+    sound:boolean,
+    bgMusic: boolean,
+    anchorEl: undefined,
     stateSettings: {
         showingFrame: undefined,
         time: number,
         hardLevel: string,
         teams: any[],
+        categories: ExpatCategory[],
         wordsToFinish: 30
     }
 
@@ -32,27 +61,63 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
 
         this.state = {
             showingFrame: undefined,
+            menuSettingsIsOpen: false,
+            sound:true,
+            bgMusic: true,
+            anchorEl: undefined,
             stateSettings: {
                 showingFrame: undefined,
                 time: 30,
                 hardLevel: 'NORMAL',
                 teams: [{name: 'Player 1'}, {name: 'Player 2'} ],
+                categories: [
+                    'Bureaucracy',
+                    'Work',
+                    'German Language',
+                    'Transport',
+                    'Social Life',
+                    'Stereotypes',
+                    'Expat Life',
+                    'Cringe Situations',
+                    'IT / Tech',
+                    'Absurd / Meme',
+                ],
                 wordsToFinish: 30
             }
         }
-
-
     }
 
+    playSound = playSound
+
     componentDidMount() {
+        // initialize persisted toggles with safe defaults
+        if (localStorage.getItem('sound-effect') === null) {
+            localStorage.setItem('sound-effect', 'true')
+        }
+        if (localStorage.getItem('bg-music') === null) {
+            localStorage.setItem('bg-music', 'true')
+        }
+
+        const bgEnabled = localStorage.getItem('bg-music') === 'true'
+        this.setState({ bgMusic: bgEnabled })
     }
 
     setType = (type: string) =>{
+        this.playSound('click');
         this.setState({showingFrame: type})
     }
 
     componentDidUpdate(prevProps: Readonly<BodyComponentProps>, prevState: Readonly<BodyComponentState>, snapshot?: any) {
 
+    }
+
+    safeParseJSON = <T,>(raw: string | null, fallback: T): T => {
+        if (raw == null) return fallback
+        try {
+            return JSON.parse(raw) as T
+        } catch {
+            return fallback
+        }
     }
 
     beforeStartGame = (stateSettings:any) => {
@@ -65,9 +130,8 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
     }
 
     newLap = () => {
-        // @ts-ignore    }
-        let teamsActiveList:any = JSON.parse(localStorage.getItem('teamsActiveList'))
-        Object.keys(teamsActiveList).map(el => teamsActiveList[el] = false)
+        const teamsActiveList: Record<string, boolean> = this.safeParseJSON(localStorage.getItem('teamsActiveList'), {})
+        Object.keys(teamsActiveList).forEach((el) => (teamsActiveList[el] = false))
         localStorage.setItem('teamsActiveList', JSON.stringify(teamsActiveList))
         this.onPlayGame()
     }
@@ -75,33 +139,37 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
 
     onPlayGame = () =>{
         const {teams} = this.state.stateSettings
-        let iteration = 0
-        // @ts-ignore
-        let teamsActiveList:any = JSON.parse(localStorage.getItem('teamsActiveList')) || {}
+        let teamsActiveList: Record<string, boolean> = this.safeParseJSON(localStorage.getItem('teamsActiveList'), {})
 
         if(Object.keys(teamsActiveList).length < 1){
-            teams.map((el:string)=> {
-                // @ts-ignore
-                teamsActiveList[el.name] = false
+            teams.forEach((el:any) => {
+                teamsActiveList[String(el.name)] = false
             })
             localStorage.setItem('teamsActiveList', JSON.stringify(teamsActiveList))
         }
 
-        let randomIndex:any = undefined
-        let count:number = 0
-        Object.keys(teamsActiveList).map((key, i)=>{
-            if(!teamsActiveList[key] && count < 1){
-                randomIndex = i
-                count = count + 1
-                teamsActiveList[key] = true
-                localStorage.setItem('teamsActiveList', JSON.stringify(teamsActiveList))
-            }
-            if(i == Object.keys(teamsActiveList).length-1 && randomIndex === undefined){
-                this.newLap();
-            }
-
+        // Ensure all current teams exist in the active map (handles renamed/added teams)
+        teams.forEach((el:any) => {
+            const name = String(el.name)
+            if (teamsActiveList[name] === undefined) teamsActiveList[name] = false
         })
-        localStorage.setItem('currentTeam', teams[randomIndex].name)
+
+        const eligibleTeams = teams.map((t:any) => String(t.name)).filter((name) => teamsActiveList[name] !== undefined)
+        const allWereActive = eligibleTeams.length > 0 && eligibleTeams.every((name) => teamsActiveList[name] === true)
+        if (allWereActive) {
+            eligibleTeams.forEach((name) => (teamsActiveList[name] = false))
+        }
+
+        const nextTeamName = eligibleTeams.find((name) => !teamsActiveList[name])
+        if (!nextTeamName) {
+            // No teams configured; back to settings
+            this.onBackToSettings()
+            return
+        }
+
+        teamsActiveList[nextTeamName] = true
+        localStorage.setItem('teamsActiveList', JSON.stringify(teamsActiveList))
+        localStorage.setItem('currentTeam', nextTeamName)
         this.setType('Timer')
     }
 
@@ -158,10 +226,82 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
         }
     }
 
+    openMenuSettings = (event: any) => {
+        this.setState({menuSettingsIsOpen: true, anchorEl: event.currentTarget})
+    }
+    closeMenuSettings =() =>{
+        this.setState({menuSettingsIsOpen: false})
+    }
+    soundOff =() =>{
+        localStorage.setItem('sound-effect', 'false')
+        this.setState({sound: false})
+    }
+
+    soundOn =() =>{
+        localStorage.setItem('sound-effect', 'true')
+        this.setState({sound: true})
+    }
+
+    bgMusicOff =() =>{
+        localStorage.setItem('bg-music', 'false')
+        this.setState({bgMusic: false})
+    }
+
+    bgMusicOn =() =>{
+        localStorage.setItem('bg-music', 'true')
+        this.setState({bgMusic: true})
+    }
+
 
     render() {
+        const {menuSettingsIsOpen, anchorEl} = this.state;
         return (
             <div className={'body-wrapper'}>
+                {this.state.bgMusic &&
+                // @ts-ignore
+                    <audio src={bgMusicSrc} autoPlay loop></audio>
+                }
+                <div className={'button-bar left'}>
+                    {!Boolean(menuSettingsIsOpen) &&
+                    <div className="" onClick={this.openMenuSettings}>
+                        <SettingsIcon style={{color: "#fff"}}> </SettingsIcon>
+                    </div>
+                    }
+                    {Boolean(menuSettingsIsOpen) &&
+                    <Menu
+                        id="simple-menu"
+                        anchorEl={anchorEl}
+                        keepMounted
+                        open={Boolean(menuSettingsIsOpen)}
+                        onClose={this.closeMenuSettings}
+                    >
+                        <MenuItem onClick={this.closeMenuSettings}>
+                            {this.state.sound &&
+                            <div className="" onClick={this.soundOff}>
+                                <VolumeMuteIcon style={{color: "#fff"}}>Off</VolumeMuteIcon>
+                            </div>
+                            }
+                            {!this.state.sound &&
+                            <div className="" onClick={this.soundOn}>
+                                <VolumeOffOutlinedIcon style={{color: "#fff"}}>On</VolumeOffOutlinedIcon>
+                            </div>
+                            }
+                        </MenuItem>
+                        <MenuItem onClick={this.closeMenuSettings}>
+                            {this.state.bgMusic &&
+                            <div className="" onClick={this.bgMusicOff}>
+                                <MusicNoteIcon style={{color: "#fff"}}>Off</MusicNoteIcon>
+                            </div>
+                            }
+                            {!this.state.bgMusic &&
+                            <div className="" onClick={this.bgMusicOn}>
+                                <MusicOffIcon style={{color: "#fff"}}>On</MusicOffIcon>
+                            </div>
+                            }
+                        </MenuItem>
+                    </Menu>
+                    }
+                </div>
                     {!this.state.showingFrame &&
                     <>
                         <div>

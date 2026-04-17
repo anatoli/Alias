@@ -35,3 +35,27 @@
     justify-content: center;
     height: inherit;
 }
+
+.button-bar{
+    position: absolute;
+    z-index: 9999999;
+    display: flex;
+    width: 10vw;
+    justify-content: space-between;
+}
+
+.button-bar.right{
+    top: 20px;
+    right: 20px;
+}
+.button-bar.left{
+    top: 20px;
+    left: 20px;
+}
+.MuiSvgIcon-root{
+    filter:drop-shadow(2px 1px 2px black);
+}
+.MuiMenu-list{
+    background-color: var(--yellow-alias);
+    color: var(--pink-alias);
+}

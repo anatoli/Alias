@@ -7,7 +7,7 @@
     height: 10vh;
 }
 
-.words h1{
+.words h1, p{
     line-height: 1;
 }
 .words{
@@ -22,8 +22,15 @@
     border-radius: 15px;
 }
 
+.word-category{
+    font-size: 0.35em;
+    line-height: 1;
+    margin-bottom: 12px;
+    opacity: 0.8;
+}
+
 .navigation h1{
-    font-size: 6em;
+    font-size: 3em;
 }
 
 .btn {
