@@ -49,6 +49,8 @@ interface SettingGameState {
 }
 
 class SettingGameComponent extends React.PureComponent <SettingGameProps, SettingGameState> {
+    private namePersistTimer: number | undefined
+
     constructor(props: any) {
         super(props);
 
@@ -69,6 +71,14 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
 
     playSound = playSound
 
+    componentWillUnmount() {
+        if (this.namePersistTimer !== undefined) {
+            window.clearTimeout(this.namePersistTimer)
+            this.namePersistTimer = undefined
+            this.persist()
+        }
+    }
+
     persist = (patch?: Partial<SettingGameState>) => {
         const next = { ...this.state, ...patch }
         saveGameSettings({
@@ -83,6 +93,10 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
     }
 
     start = () => {
+        if (this.namePersistTimer !== undefined) {
+            window.clearTimeout(this.namePersistTimer)
+            this.namePersistTimer = undefined
+        }
         this.persist()
         this.props.onStartGame(this.state)
     }
@@ -114,9 +128,17 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
 
     changeNameOfTeam = (newName: any, i: number) => {
         const teams = this.state.teams.map((el) => ({ ...el }))
-        this.cleanStorage(teams[i].name)
         teams[i] = { ...teams[i], name: String(newName) }
-        this.setState({teams}, () => this.persist())
+        this.setState({ teams }, () => {
+            if (this.namePersistTimer !== undefined) {
+                window.clearTimeout(this.namePersistTimer)
+            }
+            // Debounce persist so Android soft keyboard is not disturbed by heavy sync work
+            this.namePersistTimer = window.setTimeout(() => {
+                this.namePersistTimer = undefined
+                this.persist()
+            }, 400)
+        })
     }
 
     cleanStorage(key: string) {

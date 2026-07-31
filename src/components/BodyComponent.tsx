@@ -254,12 +254,20 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
     }
 
 
+    /** Menu screens only — silence BGM during an active match. */
+    shouldPlayBgMusic = () => {
+        if (!this.state.bgMusic) return false
+        const frame = this.state.showingFrame
+        return !frame || frame === 'Settings' || frame === 'Rules'
+    }
+
     render() {
+        const playBgMusic = this.shouldPlayBgMusic()
         return (
             <div className={'body-wrapper'}>
-                {this.state.bgMusic &&
+                {playBgMusic &&
                 // @ts-ignore
-                    <audio src={bgMusicSrc} autoPlay loop></audio>
+                    <audio key="bg-music" src={bgMusicSrc} autoPlay loop></audio>
                 }
                     {!this.state.showingFrame &&
                     <>

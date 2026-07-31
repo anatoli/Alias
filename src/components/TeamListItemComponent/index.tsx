@@ -42,7 +42,7 @@ class TeamListItemComponent extends React.PureComponent <TeamListItemProps, Team
     render() {
         const { name, index, deleteAvailable } = this.props
         return (
-            <div className={'team-list-items-wrapper'} key={name + index}>
+            <div className={'team-list-items-wrapper'}>
                 <input
                     maxLength={13}
                     readOnly={!this.props.onChange}
