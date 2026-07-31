@@ -1,4 +1,4 @@
-import { Messages } from './types'
+import { Messages } from '../types'
 
 const en: Messages = {
   'home.start': 'Start',

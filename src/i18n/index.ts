@@ -16,7 +16,7 @@ export function detectLocale(raw?: string | null): Locale {
       if (Array.isArray(navigator.languages)) candidates.push(...navigator.languages)
       if (navigator.language) candidates.push(navigator.language)
     }
-  } catch {
+  } catch (e) {
     // ignore
   }
 
@@ -66,5 +66,3 @@ export function categoryLabel(category: string): string {
   if (key in catalogs.en) return t(key)
   return category
 }
-
-export type { Locale, MessageKey }

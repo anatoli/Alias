@@ -61,7 +61,7 @@ module.exports = (context) => {
 
     const appBuild = () => {
 
-        const { promise, resolve } = promisify()
+        const { promise, resolve, reject } = promisify()
         const app = spawn('npm', ['run', 'cra:build'], {
             env: { ...process.env },
             shell: true
@@ -79,13 +79,13 @@ module.exports = (context) => {
             if (code === 0) {
                 resolve()
             } else {
-                console.log(`App build existed with ${code}`)
+                reject(new Error(`App build exited with ${code}`))
             }
         })
 
         app.on('error', (error) => {
             console.error(error)
-            throw error
+            reject(error)
         })
 
         return promise
@@ -106,35 +106,10 @@ module.exports = (context) => {
         })
     }
 
-    const cleanupWww = () => {
-        if (!fs.existsSync(wwwPath) || !fs.existsSync(buildPath)) return
-        buildEntries().forEach((entry) => rmSync(path.join(wwwPath, entry)))
-    }
-
     const build = async () => {
         await appBuild()
         materializeWww()
     }
-
-
-
-    let didCleanup = false
-
-    const cleanup = (sig) =>
-
-        (code) => {
-
-            if (didCleanup) return
-            didCleanup = true
-
-            cleanupWww()
-
-            sig !== 'exit' && process.exit(0)
-        }
-
-    ['exit', 'SIGTERM', 'SIGINT'].forEach((sig) => {
-        process.on(sig, cleanup(sig))
-    })
 
     return build()
 
