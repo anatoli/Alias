@@ -94,25 +94,15 @@ module.exports = (context) => {
     const buildEntries = () => fs.readdirSync(buildPath)
 
     const materializeWww = () => {
-        if (!fs.existsSync(wwwPath)) fs.mkdirSync(wwwPath, { recursive: true })
+        // Always materialize real files (never symlinks): Cordova Android prepare
+        // fails on CI with EEXIST when www contains symlinks into build/.
+        rmSync(wwwPath)
+        fs.mkdirSync(wwwPath, { recursive: true })
 
-        const entries = buildEntries()
-        const isWindows = process.platform === 'win32'
-
-        entries.forEach((entry) => {
+        buildEntries().forEach((entry) => {
             const targetPath = path.join(buildPath, entry)
             const dstPath = path.join(wwwPath, entry)
-
-            // On Windows, creating symlinks often requires elevated privileges / Developer Mode.
-            // Copying is the most reliable behavior for CI and local dev.
-            if (isWindows) {
-                rmSync(dstPath)
-                copyRecursiveSync(targetPath, dstPath)
-            } else {
-                // non-Windows: keep the previous fast path
-                rmSync(dstPath)
-                fs.symlinkSync(targetPath, dstPath)
-            }
+            copyRecursiveSync(targetPath, dstPath)
         })
     }
 
