@@ -6,9 +6,6 @@
 #   ANDROID_KEY_ALIAS
 #   ANDROID_KEY_PASSWORD
 #   PLAY_SERVICE_ACCOUNT_JSON — Google Play Console service account JSON
-# Optional vars:
-#   PLAY_PACKAGE_NAME         — default com.AAA.Alias
-#   PLAY_TRACK                — internal | alpha | beta | production (default: internal)
 
 name: Android Play Release
 
@@ -55,35 +52,38 @@ jobs:
 
       - name: Install npm deps
         run: |
-          # Prefer clean install; fall back if lockfile/npm version drift on the runner
           npm ci --legacy-peer-deps || npm install --legacy-peer-deps --no-fund --no-audit
 
-      - name: Decode keystore
+      - name: Prepare Cordova project skeleton
+        run: |
+          # Cordova expects www/ to exist before platform add
+          mkdir -p www
+          if [ ! -f www/index.html ]; then
+            printf '%s\n' '<!doctype html><html><body>Alias</body></html>' > www/index.html
+          fi
+          test -f config.xml
+          # Validate XML declaration (must be 1.0, app version is on <widget>)
+          head -n 1 config.xml
+
+      - name: Add Android platform
+        run: |
+          # platforms/ is gitignored — always add fresh on CI
+          rm -rf platforms/android plugins/android.json
+          npx cordova platform add android
+
+      - name: Decode keystore + signing properties
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
           echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$HOME/alias-upload.jks"
-          echo "cdvReleaseSigningPropertiesFile=release-signing.properties" >> platforms/android/gradle.properties || true
-
-      - name: Write release signing properties
-        run: |
           cat > release-signing.properties <<EOF
           storeFile=$HOME/alias-upload.jks
           storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
           keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
           EOF
-          # Cordova looks for this relative to platforms/android as well
-          mkdir -p platforms/android
           cp release-signing.properties platforms/android/release-signing.properties
-
-      - name: Ensure Android platform
-        run: |
-          if [ ! -d platforms/android ]; then
-            npx cordova platform add android
-          else
-            npx cordova prepare android
-          fi
+          echo "cdvReleaseSigningPropertiesFile=release-signing.properties" >> platforms/android/gradle.properties
 
       - name: Build release AAB
         env:
@@ -91,7 +91,6 @@ jobs:
           REACT_APP_ADMOB_INTERSTITIAL_ID: ${{ vars.REACT_APP_ADMOB_INTERSTITIAL_ID }}
           REACT_APP_SUBSCRIPTION_PRODUCT_ID: ${{ vars.REACT_APP_SUBSCRIPTION_PRODUCT_ID }}
         run: |
-          # Production CRA build via Cordova hooks (run-prod)
           npx cordova build android --release -- --packageType=bundle
 
       - name: Find AAB
