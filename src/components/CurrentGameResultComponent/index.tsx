@@ -5,6 +5,7 @@ import '../../App.css';
 import '../BodyComponent.css';
 
 import './index.css'
+import { t } from '../../i18n'
 
 
 interface CurrentGameResultProps {
@@ -139,10 +140,10 @@ class CurrentGameResultComponent extends React.PureComponent <CurrentGameResultP
         const { endPhase } = this.state
         const target = this.props.wordsToFinish
         if (endPhase === 'catchup') {
-            return `Target ${target} reached — finish the round so every team gets a turn.`
+            return t('results.catchup', { n: target })
         }
         if (endPhase === 'overtime') {
-            return `Tied at the target — keep playing until one team leads.`
+            return t('results.overtime')
         }
         return null
     }
@@ -153,23 +154,23 @@ class CurrentGameResultComponent extends React.PureComponent <CurrentGameResultP
         return(
             <div className={'results'}>
                 <div>
-                    <ModalWindowComponent open={openWinnerModal} title={'WINNER'} message={teamWinner} onFinishModalWindow={this.winnerModalClose}/>
+                    <ModalWindowComponent open={openWinnerModal} title={t('results.winner')} message={teamWinner} onFinishModalWindow={this.winnerModalClose}/>
                 </div>
                 <div className={'results-wrapper'}>
                     <div className={'word-row header'}>
-                        <h1 className={'word'}>Name</h1>
+                        <h1 className={'word'}>{t('results.name')}</h1>
                         <div className={'buttons-wrapper'}>
                             <div className={'buttons'}>
-                                <h1>Score</h1>
+                                <h1>{t('results.score')}</h1>
                             </div>
                             <div className={'buttons'}>
-                                <h1>True</h1>
+                                <h1>{t('results.true')}</h1>
                             </div>
                             <div className={'buttons'}>
-                                <h1>Bonus</h1>
+                                <h1>{t('results.bonus')}</h1>
                             </div>
                             <div className={'buttons'}>
-                                <h1>Wrong</h1>
+                                <h1>{t('results.wrong')}</h1>
                             </div>
                         </div>
 
@@ -198,9 +199,9 @@ class CurrentGameResultComponent extends React.PureComponent <CurrentGameResultP
                     <p className={`results-status results-status--${endPhase}`}>{statusMessage}</p>
                 )}
                 <div className={'footer'}>
-                    <div className={'btn'} onClick={this.onRestart}><h1>Restart</h1></div>
+                    <div className={'btn'} onClick={this.onRestart}><h1>{t('common.restart')}</h1></div>
                     {!WINNER &&
-                        <div className={'btn'} onClick={this.onNext}><h1>Next</h1></div>
+                        <div className={'btn'} onClick={this.onNext}><h1>{t('common.next')}</h1></div>
                     }
                 </div>
     </div>

@@ -3,6 +3,7 @@ import '../../App.css';
 import '../BodyComponent.css';
 
 import './index.css'
+import { t } from '../../i18n'
 
 
 interface ListWordsProps {
@@ -133,22 +134,22 @@ class ListWordsComponent extends React.PureComponent <ListWordsProps, ListWordsS
                 <div className={'footer'}>
                     <div className={'result-counter'}>
                         <div className={'trues'}>
-                            <h2>Correct:</h2>
+                            <h2>{t('review.correct')}</h2>
                             <h3>{truescounter}</h3>
                         </div>
                         <div className={'false'}>
-                            <h2>Skipped:</h2>
+                            <h2>{t('review.skipped')}</h2>
                             <h3>{words.length - truescounter}</h3>
                         </div>
                         {bonus > 0 && (
                             <div className={'trues'}>
-                                <h2>Bonus:</h2>
+                                <h2>{t('review.bonus')}</h2>
                                 <h3>+{bonus}</h3>
                             </div>
                         )}
                     </div>
                     <div className={'btn'} onClick={this.onNext}>
-                        <h1>Next</h1>
+                        <h1>{t('common.next')}</h1>
                     </div>
                 </div>
             </div>

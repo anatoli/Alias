@@ -15,6 +15,7 @@ import VolumeUpIcon from '@material-ui/icons/VolumeUp';
 import VolumeOffIcon from '@material-ui/icons/VolumeOff';
 import {WordPack} from "../GameFrameComponent/helpArray";
 import {saveGameSettings} from "../../services/gameSettings";
+import {t} from "../../i18n";
 
 
 interface SettingGameProps {
@@ -105,7 +106,7 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
         this.playSound('click');
         if (this.state.teams.length < 10) {
             const teams = this.state.teams.map((el) => ({ ...el }))
-            teams.push({name: "Player " + (teams.length + 1)})
+            teams.push({name: t('settings.player', { n: teams.length + 1 })})
             this.setState({teams}, () => this.persist())
         }
     }
@@ -153,12 +154,12 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
                 <div className={'setting'}>
                     <div className={'settings-block'}>
                         <div className={'title-block'}>
-                            <h2 className='title'>Teams:</h2>
+                            <h2 className='title'>{t('settings.teams')}</h2>
                             <div className={'setting-game-play-btn add-team'}>
-                                <button type="button" className="icon-btn" onClick={this.addTeam} aria-label="Add team">
+                                <button type="button" className="icon-btn" onClick={this.addTeam} aria-label={t('settings.addTeam')}>
                                     <PersonAddIcon />
                                 </button>
-                                <button type="button" className="icon-btn" onClick={this.openModalSettings} aria-label="Game settings">
+                                <button type="button" className="icon-btn" onClick={this.openModalSettings} aria-label={t('settings.gameSettings')}>
                                     <TuneIcon />
                                 </button>
                             </div>
@@ -180,13 +181,13 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
 
                     <div className={'settings-block'}>
                         <div className={'title-block'}>
-                            <h2 className='title'>Audio:</h2>
+                            <h2 className='title'>{t('settings.audio')}</h2>
                         </div>
                         <div className="audio-settings">
                             <div className="audio-setting-row">
                                 <div className="audio-setting-label">
                                     {this.props.soundEnabled ? <VolumeUpIcon /> : <VolumeOffIcon />}
-                                    <span>Sounds</span>
+                                    <span>{t('settings.sounds')}</span>
                                 </div>
                                 <label className="switch">
                                     <input
@@ -201,7 +202,7 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
                             <div className="audio-setting-row">
                                 <div className="audio-setting-label">
                                     {this.props.bgMusicEnabled ? <MusicNoteIcon /> : <MusicOffIcon />}
-                                    <span>Music</span>
+                                    <span>{t('settings.music')}</span>
                                 </div>
                                 <label className="switch">
                                     <input
@@ -217,7 +218,7 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
                 </div>
                 <div>
                     <div onClick={this.start} className={'settings-block btn-start'}>
-                        <h2>Start</h2>
+                        <h2>{t('settings.start')}</h2>
                     </div>
                 </div>
                 <ModalSettingsComponent

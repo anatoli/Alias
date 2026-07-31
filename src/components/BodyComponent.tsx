@@ -16,6 +16,7 @@ import {initAds, showInterstitialAfterRound} from "../services/ads";
 import {canShowNoAdsOffer, hasNoAdsSubscription, markNoAdsOfferShown} from "../services/subscription";
 import {loadGameSettings, saveGameSettings} from "../services/gameSettings";
 import {ExpatCategory, WordPack} from "./GameFrameComponent/helpArray";
+import {t} from "../i18n";
 // @ts-ignore
 import bgMusicSrc from "../res/audio/bg_sound.mp3"
 
@@ -96,8 +97,21 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
         }
     }
 
-    beforeStartGame = (stateSettings:any) => {
+    /** Clears match progress only — keeps teams/settings (alias.gameSettings). */
+    clearMatchProgress = () => {
+        const teams = (this.state.stateSettings && this.state.stateSettings.teams) || []
+        localStorage.removeItem('teamsActiveList')
+        localStorage.removeItem('currentTeam')
+        localStorage.removeItem('results')
         resetSessionDeck()
+        teams.forEach((el: any) => {
+            if (el && el.name) localStorage.removeItem(String(el.name))
+        })
+    }
+
+    beforeStartGame = (stateSettings:any) => {
+        // New match always starts 0–0 (settings/teams stay persisted)
+        this.clearMatchProgress()
         const persisted = saveGameSettings({
             time: stateSettings.time,
             hardLevel: stateSettings.hardLevel,
@@ -191,13 +205,7 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
     }
 
     restart = () => {
-        localStorage.removeItem('teamsActiveList')
-        localStorage.removeItem('currentTeam')
-        localStorage.removeItem('results')
-        resetSessionDeck()
-        this.state.stateSettings.teams.map(el=>{
-            localStorage.removeItem(el.name)
-        })
+        this.clearMatchProgress()
         this.onBackToSettings()
     }
 
@@ -272,8 +280,8 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
                     {!this.state.showingFrame &&
                     <>
                         <div className="home-screen">
-                            <button className={'btn-custom'} onClick={(node) =>this.setType('Settings')}>Start</button>
-                            <button className={'btn-custom'}  onClick={(node) => this.setType('Rules')}>Rules</button>
+                            <button className={'btn-custom'} onClick={(node) =>this.setType('Settings')}>{t('home.start')}</button>
+                            <button className={'btn-custom'}  onClick={(node) => this.setType('Rules')}>{t('home.rules')}</button>
                         </div>
                     </>
                     }

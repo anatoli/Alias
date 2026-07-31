@@ -4,7 +4,7 @@ import '../BodyComponent.css';
 
 import './index.css'
 import TeamListItemComponent from "../TeamListItemComponent";
-
+import { t } from "../../i18n";
 
 
 interface BeforeStartFrameProps {
@@ -54,10 +54,10 @@ class BeforeStartFrameComponent extends React.PureComponent <BeforeStartFramePro
                 </div>
                 <div className="before-start-actions">
                     <div onClick={this.play} className={'settings-block btn-start'}>
-                        <h1>Play</h1>
+                        <h1>{t('common.play')}</h1>
                     </div>
                     <div onClick={this.back} className={'settings-block btn-start'}>
-                        <h1>Back</h1>
+                        <h1>{t('common.back')}</h1>
                     </div>
                 </div>
             </div>

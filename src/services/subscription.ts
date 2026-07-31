@@ -1,4 +1,5 @@
 import { APP_CONFIG } from '../config/appConfig'
+import { t } from '../i18n'
 
 const ENTITLEMENT_KEY = 'alias.noAds.entitlement'
 
@@ -115,8 +116,8 @@ export async function purchaseNoAdsSubscription(): Promise<'ok' | 'cancelled' | 
 
 export function getSubscriptionOfferCopy() {
   return {
-    title: 'Play without ads?',
-    message: `Subscribe for ${APP_CONFIG.subscriptionOfferLabel} and remove interstitial ads after every round.`,
+    title: t('ads.title'),
+    message: t('ads.message', { offer: t('ads.offerLabel') }),
     productId: APP_CONFIG.subscriptionProductId,
   }
 }

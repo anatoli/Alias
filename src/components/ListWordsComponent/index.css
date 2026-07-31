@@ -43,8 +43,8 @@
     flex: 1 1 auto;
     min-height: 0;
     max-height: min(62vh, 520px);
-    padding: var(--gap-md) 0;
-
+    padding: var(--gap-md) var(--page-pad);
+    box-sizing: border-box;
 }
 
 /* The switch - the box around the slider */
@@ -115,10 +115,10 @@ input:checked + .slider:before {
     background: linear-gradient(180deg, rgba(99, 102, 241, 0.95), rgba(79, 70, 229, 0.92));
     flex: 1 1 0;
     min-width: 0;
-    min-height: var(--btn-min-h);
+    min-height: calc(var(--btn-min-h) + 8px);
     width: auto;
     height: auto;
-    padding: 12px var(--gap-md);
+    padding: 14px var(--gap-md);
     border-radius: var(--radius-md);
     align-items: center;
     justify-content: center;
@@ -127,12 +127,16 @@ input:checked + .slider:before {
     display: flex;
 }
 .word-list .btn>h1{
-    color: rgba(255, 255, 255, 0.96) !important;
-    font-size: clamp(1rem, 3.8vw, 1.35rem) !important;
-    line-height: 1.25 !important;
-    font-weight: 600 !important;
+    color: #fff !important;
+    font-size: clamp(1.25rem, 4.8vw, 1.65rem) !important;
+    line-height: 1.2 !important;
+    font-weight: 700 !important;
     margin: 0;
     padding: 0;
+    letter-spacing: 0.02em;
+    text-shadow:
+        0 1px 0 #000,
+        0 2px 4px rgba(0, 0, 0, 0.75);
 }
 
 .word-list .footer{
@@ -165,35 +169,45 @@ input:checked + .slider:before {
 }
 
 .result-counter{
-    font-size: clamp(1rem, 3.2vw, 1.35rem);
     flex: 1 1 0;
     min-width: 0;
-    max-width: 220px;
+    max-width: min(48vw, 260px);
     display: flex;
     flex-flow: column;
     justify-content: center;
-    gap: var(--gap-sm);
+    gap: 10px;
 }
 
 .result-counter .false{
-    color: rgba(251, 113, 133, 0.92) !important;
+    color: rgba(251, 113, 133, 0.95) !important;
+}
+.result-counter .false h2 {
+    color: rgba(251, 113, 133, 0.95) !important;
 }
 .result-counter .trues h2{
-    color: rgba(52, 211, 153, 0.92) !important;
+    color: rgba(52, 211, 153, 0.95) !important;
 }
 
-.result-counter h2, .result-counter h3{
-    margin-top: 0;
-    margin-bottom: 0;
-    gap: 20px;
+.result-counter h2 {
+    margin: 0;
+    font-size: clamp(1.05rem, 3.8vw, 1.35rem) !important;
+    font-weight: 600 !important;
+    line-height: 1.2;
+}
+
+.result-counter h3 {
+    margin: 0;
+    font-size: clamp(1.35rem, 5vw, 1.85rem) !important;
+    font-weight: 700 !important;
+    line-height: 1.1;
+    color: var(--text-primary) !important;
+    min-width: 1.5em;
+    text-align: right;
 }
 
 .trues, .false{
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.result-counter h3{
-    color: var(--text-primary)!important;
+    gap: 12px;
 }

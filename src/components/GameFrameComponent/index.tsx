@@ -6,11 +6,17 @@ import ProgressBarComponent from "../ProgressBarComponent";
 import SkipNextIcon from '@material-ui/icons/SkipNext';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import BlockIcon from '@material-ui/icons/Block';
+import PauseIcon from '@material-ui/icons/Pause';
+import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
+import Dialog from '@material-ui/core/Dialog';
+import Button from '@material-ui/core/Button';
 
 import {playSound, haptic} from "../utils";
 import {EXPAT_DECK, HardLevel, ExpatCategory, WordPack} from "./helpArray";
 import {getWordsForLevel} from "../../services/wordSync";
 import {getCustomPack} from "../../services/customPacks";
+import {t, categoryLabel} from "../../i18n";
 
 type Card = { category?: ExpatCategory, text: string }
 
@@ -45,6 +51,8 @@ interface GameFrameState {
     },
     currentWord: string
     currentCategory?: ExpatCategory
+    paused: boolean
+    exitConfirmOpen: boolean
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -85,7 +93,9 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
                 streakBonus: 0,
             },
             currentWord: '',
-            currentCategory: undefined
+            currentCategory: undefined,
+            paused: false,
+            exitConfirmOpen: false,
         }
     }
 
@@ -125,7 +135,7 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
         const pack = (this.props.settings.wordPack || 'classic') as WordPack
         if (pack === 'custom') {
             const custom = getCustomPack(String(this.props.settings.customPackId || ''))
-            const words = custom && custom.words.length > 0 ? custom.words : ['Add words in Settings']
+            const words = custom && custom.words.length > 0 ? custom.words : [t('game.emptyCustom')]
             return words.map((text) => ({ text }))
         }
         if (pack === 'expat') {
@@ -242,10 +252,12 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
 
     startTimer = () =>{
         if (this.intervalId !== undefined) return
+        if (this.state.paused) return
 
         const total = Number(this.props.settings.time) || 1
         this.intervalId = window.setInterval(() => {
             this.setState((prev) => {
+                if (prev.paused) return prev
                 const nextTimer = Number(prev.timer) - 1
                 if (nextTimer < 6) this.playSound('tick')
 
@@ -267,6 +279,46 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
         }, 1000)
     }
 
+    stopTimer = () => {
+        if (this.intervalId !== undefined) {
+            window.clearInterval(this.intervalId)
+            this.intervalId = undefined
+        }
+    }
+
+    onPauseToggle = () => {
+        this.playSound('click')
+        if (this.state.exitConfirmOpen) return
+        if (this.state.paused) {
+            this.setState({ paused: false }, () => this.startTimer())
+            return
+        }
+        this.stopTimer()
+        this.setState({ paused: true })
+    }
+
+    onExitClick = () => {
+        this.playSound('click')
+        this.stopTimer()
+        this.setState({ paused: true, exitConfirmOpen: true })
+    }
+
+    onExitCancel = () => {
+        this.playSound('click')
+        this.setState({ exitConfirmOpen: false }, () => {
+            // Stay paused — user can resume explicitly
+        })
+    }
+
+    onExitConfirm = () => {
+        this.playSound('click')
+        this.stopTimer()
+        this.setState({ exitConfirmOpen: false })
+        if (this.props.onFinishGameFrame) {
+            this.props.onFinishGameFrame(this.state.gameProcess)
+        }
+    }
+
     /**
      * Streak bonus: from streak 3 onward each correct answer adds +1 bonus point.
      * (streak 3 → +1, 4 → +1, 5 → +1, …)
@@ -274,6 +326,7 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
     streakBonusFor = (streak: number) => (streak >= 3 ? 1 : 0)
 
     setAnswerWord = async (argument:boolean) => {
+        if (this.state.paused) return
         haptic(argument ? 12 : 8)
         let obj:any = this.state.gameProcess.listWords
         const label = this.state.currentCategory ? `[${this.state.currentCategory}] ${this.state.currentWord}` : this.state.currentWord
@@ -305,12 +358,33 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
     }
 
     render() {
-        const {currentWord, currentCategory, streak, streakBonus} = this.state
+        const {currentWord, currentCategory, streak, streakBonus, paused, exitConfirmOpen} = this.state
         const parts = this.getWordDisplayParts(currentWord)
         const displayText = parts.join(' ')
         const single = parts.length === 1
         return(
             <div className="game-frame">
+                <div className="game-frame__topbar">
+                    <div className="game-frame__topbar-spacer" />
+                    <div className="game-frame__controls">
+                        <button
+                            type="button"
+                            className="game-frame__icon-btn"
+                            onClick={this.onPauseToggle}
+                            aria-label={paused ? t('game.resume') : t('game.pause')}
+                        >
+                            {paused ? <PlayArrowIcon /> : <PauseIcon />}
+                        </button>
+                        <button
+                            type="button"
+                            className="game-frame__icon-btn"
+                            onClick={this.onExitClick}
+                            aria-label={t('game.exit')}
+                        >
+                            <ExitToAppIcon />
+                        </button>
+                    </div>
+                </div>
                 <div className={'timer'}>
                     <h1 className="game-frame__timer-value">{this.state.timer}</h1>
                     <ProgressBarComponent progress={this.state.progress} onFinishProgressBar={this.timeIsDone}></ProgressBarComponent>
@@ -320,10 +394,13 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
                         {streak >= 2 && (
                             <div className="streak-badge" style={{ marginBottom: 'var(--gap-sm)' }}>
                                 <span className="streak-badge__dot" />
-                                <span>Streak x{streak}{streakBonus > 0 ? ` · +${streakBonus} bonus` : ''}</span>
+                                <span>
+                                    {t('game.streak', { n: streak })}
+                                    {streakBonus > 0 ? t('game.streakBonus', { n: streakBonus }) : ''}
+                                </span>
                             </div>
                         )}
-                        {currentCategory && <div className={'word-category'}>{currentCategory}</div>}
+                        {currentCategory && <div className={'word-category'}>{categoryLabel(currentCategory)}</div>}
                         <div key={currentWord} className="game-frame__word-anim">
                             <p
                                 ref={this.wordTextRef}
@@ -333,18 +410,45 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
                             </p>
                         </div>
                     </div>
+                    {paused && !exitConfirmOpen && (
+                        <div className="game-frame__pause-overlay">
+                            <p className="game-frame__pause-label">{t('game.paused')}</p>
+                            <button type="button" className="game-frame__resume-btn" onClick={this.onPauseToggle}>
+                                <PlayArrowIcon />
+                                <span>{t('game.resume')}</span>
+                            </button>
+                        </div>
+                    )}
                 </div>
                 <div className={'navigation'}>
-                    <div className={'btn btn--skip'} onClick={()=>this.setAnswerWord(false)}>
+                    <div className={`btn btn--skip ${paused ? 'btn--disabled' : ''}`} onClick={()=>this.setAnswerWord(false)}>
                         <BlockIcon className="btn__icon" />
-                        <h1>Skip</h1>
+                        <h1>{t('game.skip')}</h1>
                     </div>
-                    <div className={'btn btn--next'} onClick={()=>this.setAnswerWord(true)}>
+                    <div className={`btn btn--next ${paused ? 'btn--disabled' : ''}`} onClick={()=>this.setAnswerWord(true)}>
                         <CheckCircleOutlineIcon className="btn__icon" />
-                        <h1>Next</h1>
+                        <h1>{t('game.next')}</h1>
                         <SkipNextIcon className="btn__icon btn__icon--trail" />
                     </div>
                 </div>
+
+                <Dialog
+                    open={exitConfirmOpen}
+                    onClose={this.onExitCancel}
+                    PaperProps={{ className: 'game-exit-dialog-paper' }}
+                    aria-labelledby="exit-round-title"
+                >
+                    <div className="game-exit-dialog">
+                        <h2 id="exit-round-title" className="game-exit-dialog__title">{t('game.exitConfirmTitle')}</h2>
+                        <p className="game-exit-dialog__message">{t('game.exitConfirmMessage')}</p>
+                        <div className="game-exit-dialog__actions">
+                            <Button className="game-exit-dialog__confirm" variant="contained" color="primary" onClick={this.onExitConfirm}>
+                                {t('game.exitConfirmYes')}
+                            </Button>
+                            <Button onClick={this.onExitCancel}>{t('game.exitConfirmNo')}</Button>
+                        </div>
+                    </div>
+                </Dialog>
             </div>
         )
     }

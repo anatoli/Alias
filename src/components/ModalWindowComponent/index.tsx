@@ -12,6 +12,7 @@ import MuiDialogTitle from '@material-ui/core/DialogTitle';
 import MuiDialogContent from '@material-ui/core/DialogContent';
 import MuiDialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
+import { t } from '../../i18n';
 
 const styles = (theme: Theme) =>
     createStyles({
@@ -120,7 +121,7 @@ class ModalWindowComponent extends React.PureComponent <ModalWindowProps, ModalW
                     </DialogContent>
                     <DialogActions>
                         <Button autoFocus onClick={this.handleClose} color="primary">
-                            Close
+                            {t('common.close')}
                         </Button>
                     </DialogActions>
                 </Dialog>

@@ -26,6 +26,7 @@ const DEFAULT_CATEGORIES: ExpatCategory[] = [
 ]
 
 export function defaultGameSettings(): PersistedGameSettings {
+  // Keep English defaults in storage for stability; UI localizes new names via t()
   return {
     time: 30,
     hardLevel: 'NORMAL',

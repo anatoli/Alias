@@ -1,8 +1,8 @@
 import React from 'react'
 import Dialog from '@material-ui/core/Dialog'
 import Button from '@material-ui/core/Button'
-import { APP_CONFIG } from '../../config/appConfig'
-import { getSubscriptionOfferCopy, purchaseNoAdsSubscription } from '../../services/subscription'
+import { purchaseNoAdsSubscription, getSubscriptionOfferCopy } from '../../services/subscription'
+import { t } from '../../i18n'
 import './index.css'
 
 interface NoAdsModalProps {
@@ -39,10 +39,7 @@ class NoAdsModalComponent extends React.PureComponent<NoAdsModalProps, NoAdsModa
       return
     }
     this.setState({
-      error:
-        result === 'unavailable'
-          ? 'In-app purchases are not available on this device yet. Product must be configured in Google Play.'
-          : 'Purchase failed. Please try again later.',
+      error: result === 'unavailable' ? t('ads.errorUnavailable') : t('ads.errorFailed'),
     })
   }
 
@@ -60,7 +57,6 @@ class NoAdsModalComponent extends React.PureComponent<NoAdsModalProps, NoAdsModa
             {copy.title}
           </h2>
           <p className="no-ads-modal__message">{copy.message}</p>
-          <div className="no-ads-modal__badge">{APP_CONFIG.subscriptionOfferLabel}</div>
           {this.state.error && <p className="no-ads-modal__error">{this.state.error}</p>}
           <div className="no-ads-modal__actions">
             <Button
@@ -70,10 +66,10 @@ class NoAdsModalComponent extends React.PureComponent<NoAdsModalProps, NoAdsModa
               disabled={this.state.busy}
               onClick={this.onSubscribe}
             >
-              {this.state.busy ? '…' : 'Subscribe 6 months'}
+              {this.state.busy ? '…' : t('ads.subscribe')}
             </Button>
             <Button disabled={this.state.busy} onClick={this.props.onClose}>
-              Continue with ads
+              {t('ads.continue')}
             </Button>
           </div>
         </div>

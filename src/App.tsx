@@ -3,24 +3,19 @@ import './App.css';
 
 import HeaderComponent from "./components/HeaderComponent";
 import BodyComponent from "./components/BodyComponent";
+import { initLocaleFromDevice } from "./i18n";
 
 class App extends React.Component {
    constructor(props:any) {
      super(props);
+     initLocaleFromDevice()
      this.state={}
    }
 
    state = {}
 
    componentDidMount() {
-
-       if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|BB|PlayBook|IEMobile|Windows Phone|Kindle|Silk|Opera Mini/i
-           .test(navigator.userAgent)) {
-
-
-       } else {
-       }
-
+       initLocaleFromDevice()
    }
 
 

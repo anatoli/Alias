@@ -4,10 +4,10 @@
     min-height: var(--btn-min-h);
     padding: 14px var(--btn-pad-x);
     border-radius: var(--radius-lg);
-    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 55%, var(--accent-3) 100%);
+    background: linear-gradient(180deg, rgba(99, 102, 241, 0.95), rgba(79, 70, 229, 0.92));
     color: rgba(255, 255, 255, 0.96) !important;
     border: 1px solid rgba(255, 255, 255, 0.14);
-    box-shadow: var(--shadow-1), var(--glow-1);
+    box-shadow: var(--shadow-1);
     margin: 0 auto var(--gap-md);
     font-size: clamp(1.125rem, 4.2vw, 1.75rem);
     line-height: 1.25;
@@ -22,7 +22,7 @@
 .btn-custom:active{
     transform: translateY(1px);
     filter: brightness(0.98);
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35), var(--glow-2);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
 }
 .btn-custom-category{
     min-width: 30vh;
