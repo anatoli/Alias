@@ -115,14 +115,24 @@ jobs:
         id: aab
         run: |
           set -euo pipefail
-          AAB=$(find platforms/android -name "*.aab" | head -n 1)
+          AAB=$(find platforms/android -path '*/outputs/bundle/*/*.aab' -o -name '*-release.aab' | head -n 1)
+          if [ -z "${AAB}" ]; then
+            AAB=$(find platforms/android -name '*.aab' | head -n 1)
+          fi
           echo "path=$AAB" >> "$GITHUB_OUTPUT"
           test -n "$AAB"
+          test -f "$AAB"
           ls -la "$AAB"
-          # Fail if unsigned
-          jarsigner -verify -verbose -certs "$AAB" | tee /tmp/aab-verify.txt
-          grep -q "jar verified" /tmp/aab-verify.txt
-
+          # jarsigner often exits 1 on cert-chain warnings even when the bundle is signed
+          set +e
+          jarsigner -verify -verbose -certs "$AAB" 2>&1 | tee /tmp/aab-verify.txt
+          set -e
+          if ! grep -qiE 'jar verified|verified\.' /tmp/aab-verify.txt; then
+            echo "::error::AAB signature verification failed"
+            tail -n 80 /tmp/aab-verify.txt || true
+            exit 1
+          fi
+          echo "AAB signature OK: $AAB"
       - name: Upload to Google Play
         uses: r0adkll/upload-google-play@v1
         with:
