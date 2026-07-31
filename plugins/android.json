@@ -7,24 +7,24 @@
     "files": {}
   },
   "installed_plugins": {
+    "cordova-plugin-screen-orientation": {
+      "PACKAGE_NAME": "com.AAA.Alias"
+    },
+    "cordova-plugin-dialogs": {
+      "PACKAGE_NAME": "com.AAA.Alias"
+    },
+    "cordova-plugin-background-mode": {
+      "PACKAGE_NAME": "com.AAA.Alias"
+    },
+    "cordova-plugin-insomnia": {
+      "PACKAGE_NAME": "com.AAA.Alias"
+    },
     "admob-plus-cordova": {
       "APP_ID_ANDROID": "ca-app-pub-8774936490708638~4881147544",
       "PLAY_SERVICES_VERSION": "20.6.0",
       "PACKAGE_NAME": "com.AAA.Alias"
     },
     "admob-plus-cordova-native": {
-      "PACKAGE_NAME": "com.AAA.Alias"
-    },
-    "cordova-plugin-background-mode": {
-      "PACKAGE_NAME": "com.AAA.Alias"
-    },
-    "cordova-plugin-dialogs": {
-      "PACKAGE_NAME": "com.AAA.Alias"
-    },
-    "cordova-plugin-insomnia": {
-      "PACKAGE_NAME": "com.AAA.Alias"
-    },
-    "cordova-plugin-screen-orientation": {
       "PACKAGE_NAME": "com.AAA.Alias"
     }
   },
@@ -35,10 +35,10 @@
     "cordova-plugin-advanced-background-mode": {
       "PACKAGE_NAME": "com.AAA.Alias"
     },
-    "es6-promise-plugin": {
+    "cordova-support-android-plugin": {
       "PACKAGE_NAME": "com.AAA.Alias"
     },
-    "cordova-support-android-plugin": {
+    "es6-promise-plugin": {
       "PACKAGE_NAME": "com.AAA.Alias"
     }
   }

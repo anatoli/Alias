@@ -1,0 +1,110 @@
+# Android release → Google Play (AAB)
+#
+# Required GitHub secrets:
+#   ANDROID_KEYSTORE_BASE64   — base64 of upload keystore (.jks/.keystore)
+#   ANDROID_KEYSTORE_PASSWORD
+#   ANDROID_KEY_ALIAS
+#   ANDROID_KEY_PASSWORD
+#   PLAY_SERVICE_ACCOUNT_JSON — Google Play Console service account JSON
+# Optional vars:
+#   PLAY_PACKAGE_NAME         — default com.AAA.Alias
+#   PLAY_TRACK                — internal | alpha | beta | production (default: internal)
+
+name: Android Play Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: 'Play track'
+        required: true
+        default: 'internal'
+        type: choice
+        options:
+          - internal
+          - alpha
+          - beta
+          - production
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install npm deps
+        run: npm ci
+
+      - name: Decode keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$HOME/alias-upload.jks"
+          echo "cdvReleaseSigningPropertiesFile=release-signing.properties" >> platforms/android/gradle.properties || true
+
+      - name: Write release signing properties
+        run: |
+          cat > release-signing.properties <<EOF
+          storeFile=$HOME/alias-upload.jks
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          EOF
+          # Cordova looks for this relative to platforms/android as well
+          mkdir -p platforms/android
+          cp release-signing.properties platforms/android/release-signing.properties
+
+      - name: Ensure Android platform
+        run: |
+          if [ ! -d platforms/android ]; then
+            npx cordova platform add android
+          else
+            npx cordova prepare android
+          fi
+
+      - name: Build release AAB
+        env:
+          REACT_APP_WORDS_URL: ${{ vars.REACT_APP_WORDS_URL }}
+          REACT_APP_ADMOB_INTERSTITIAL_ID: ${{ vars.REACT_APP_ADMOB_INTERSTITIAL_ID }}
+          REACT_APP_SUBSCRIPTION_PRODUCT_ID: ${{ vars.REACT_APP_SUBSCRIPTION_PRODUCT_ID }}
+        run: |
+          # Production CRA build via Cordova hooks (run-prod)
+          npx cordova build android --release -- --packageType=bundle
+
+      - name: Find AAB
+        id: aab
+        run: |
+          AAB=$(find platforms/android -name "*.aab" | head -n 1)
+          echo "path=$AAB" >> "$GITHUB_OUTPUT"
+          test -n "$AAB"
+          ls -la "$AAB"
+
+      - name: Upload to Google Play
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.AAA.Alias
+          releaseFiles: ${{ steps.aab.outputs.path }}
+          track: ${{ github.event.inputs.track || 'internal' }}
+          status: completed

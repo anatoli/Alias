@@ -29,6 +29,36 @@ module.exports = (context) => {
     const wwwPath = path.join(projectRoot, 'www')
     const buildPath = path.join(projectRoot, 'build')
 
+    const rmSync = (p) => {
+        if (!fs.existsSync(p)) return
+        if (typeof fs.rmSync === 'function') {
+            fs.rmSync(p, { recursive: true, force: true })
+            return
+        }
+        const stat = fs.lstatSync(p)
+        if (stat.isDirectory()) {
+            fs.readdirSync(p).forEach((name) => rmSync(path.join(p, name)))
+            fs.rmdirSync(p)
+        } else {
+            fs.unlinkSync(p)
+        }
+    }
+
+    const copyRecursiveSync = (src, dst) => {
+        const stat = fs.lstatSync(src)
+        if (stat.isSymbolicLink()) {
+            // shouldn't happen for CRA build output, but keep behavior safe
+            const real = fs.realpathSync(src)
+            return copyRecursiveSync(real, dst)
+        }
+        if (stat.isDirectory()) {
+            if (!fs.existsSync(dst)) fs.mkdirSync(dst, { recursive: true })
+            fs.readdirSync(src).forEach((name) => copyRecursiveSync(path.join(src, name), path.join(dst, name)))
+            return
+        }
+        fs.copyFileSync(src, dst)
+    }
+
     const appBuild = () => {
 
         const { promise, resolve } = promisify()
@@ -61,27 +91,39 @@ module.exports = (context) => {
         return promise
     }
 
-    const createSymlink = () => {
-        fs.readdirSync(buildPath)
-            .forEach(entry => {
-                const targetPath = path.join(buildPath, entry)
-                const dstPath = path.join(wwwPath, entry)
+    const buildEntries = () => fs.readdirSync(buildPath)
+
+    const materializeWww = () => {
+        if (!fs.existsSync(wwwPath)) fs.mkdirSync(wwwPath, { recursive: true })
+
+        const entries = buildEntries()
+        const isWindows = process.platform === 'win32'
+
+        entries.forEach((entry) => {
+            const targetPath = path.join(buildPath, entry)
+            const dstPath = path.join(wwwPath, entry)
+
+            // On Windows, creating symlinks often requires elevated privileges / Developer Mode.
+            // Copying is the most reliable behavior for CI and local dev.
+            if (isWindows) {
+                rmSync(dstPath)
+                copyRecursiveSync(targetPath, dstPath)
+            } else {
+                // non-Windows: keep the previous fast path
+                rmSync(dstPath)
                 fs.symlinkSync(targetPath, dstPath)
-            })
+            }
+        })
     }
 
-    const cleanupSymlink = () => {
-        fs.readdirSync(wwwPath, { withFileTypes: true })
-            .forEach(dirent => {
-                if (dirent.isSymbolicLink()) {
-                    fs.unlinkSync(path.join(wwwPath, dirent.name))
-                }
-            })
+    const cleanupWww = () => {
+        if (!fs.existsSync(wwwPath) || !fs.existsSync(buildPath)) return
+        buildEntries().forEach((entry) => rmSync(path.join(wwwPath, entry)))
     }
 
     const build = async () => {
         await appBuild()
-        createSymlink()
+        materializeWww()
     }
 
 
@@ -95,7 +137,7 @@ module.exports = (context) => {
             if (didCleanup) return
             didCleanup = true
 
-            cleanupSymlink()
+            cleanupWww()
 
             sig !== 'exit' && process.exit(0)
         }

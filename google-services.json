@@ -1,36 +1,26 @@
 {
   "project_info": {
-    "project_number": "494209891578",
-    "project_id": "radiofinderua",
-    "storage_bucket": "radiofinderua.appspot.com"
+    "project_number": "REPLACE_ME",
+    "project_id": "alias-bitte",
+    "storage_bucket": "alias-bitte.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:494209891578:android:48dfca06dadad5b08b9d43",
+        "mobilesdk_app_id": "1:REPLACE_ME:android:REPLACE_ME",
         "android_client_info": {
-          "package_name": "com.AAA.RadioFinder"
+          "package_name": "com.AAA.Alias"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "494209891578-3jtbpgv3j347abrk6j1r2t0pi7og9u00.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyA3Sap3m0ODHYU7l8B6qED2pFcddz9GIL8"
+          "current_key": "REPLACE_ME"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "494209891578-3jtbpgv3j347abrk6j1r2t0pi7og9u00.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }

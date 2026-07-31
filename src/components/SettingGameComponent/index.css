@@ -2,114 +2,166 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 90vw;
-    border-radius: 20px;
-    margin: 20px 0 3vh 0;
-    padding: 0 20px;
-    background-color: #ffdf3f;
-    font-size: 2em;
+    width: 100%;
+    max-width: var(--content-max);
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: var(--radius-lg);
+    margin-top: var(--gap-md);
+    margin-bottom: var(--gap-md);
+    padding: var(--gap-md) var(--gap-lg);
+    background: #1f2937;
+    border: 1px solid var(--border-1);
+    box-shadow: var(--shadow-1);
+    font-size: clamp(1rem, 3.2vw, 1.35rem);
     flex-wrap: wrap;
+    gap: var(--gap-sm);
 }
 
 .setting{
-    height: 75vh;
-    overflow-y: scroll;
-    border-radius: 20px;
+    width: 100%;
+    max-width: var(--content-max);
+    margin: 0 auto;
+    max-height: min(72vh, 640px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-lg);
+    padding: 0 var(--page-pad);
 }
 .setting h1, .setting h2{
-    margin-top: 0px;
-    margin-bottom: 0px;
-    height: 1em;
-    line-height: 1;
+    margin-top: 0;
+    margin-bottom: 0;
+    min-height: 1.25em;
+    line-height: 1.2;
 }
 
 .info-block{
     width: 100%;
     display: flex;
-    justify-content: space-evenly;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--gap-sm);
 }
 .team-list, .info-block{
-    padding: 20px 0;
+    padding: var(--gap-md) 0;
 }
 
 .info-block.btn{
-    position: relative;
-    width: 0;
+    display: none;
 }
 
 .info-block.btn h1, .info-block.btn h2{
-    font-size: 2em;
-    line-height: 0.5;
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    display: block;
-    background-color: #FFFFFF;
-    box-shadow: 0px 10px 9px 4px rgba(0,0,0,0.75);
+    display: none;
 }
 
 .info-block h1, .info-block h2{
-    border: 1px solid #7e6900;
-    border-radius: 20px;
-    padding: 16px;
+    border: 1px solid var(--border-1);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    margin: 0;
+    color: var(--text-primary) !important;
+    background: #374151;
+    font-size: clamp(0.95rem, 3vw, 1.15rem) !important;
+    line-height: 1.2;
+    flex: 1 1 auto;
+    min-width: min(104px, 28vw);
+    max-width: 100%;
+    text-align: center;
+    cursor: pointer;
 }
 
 .info-block h1.active, .info-block h2.active{
-    background-color: #FFFFFF;
-    box-shadow: 0px 10px 9px 4px rgba(0,0,0,0.75);
+    background: linear-gradient(180deg, rgba(99, 102, 241, 0.35), rgba(99, 102, 241, 0.18));
+    border-color: rgba(99, 102, 241, 0.45);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
 }
 
 .team-list input{
-    width: 75%;
+    width: 100%;
+    max-width: 100%;
     background: transparent;
     border: none;
-    font-size: 44px;
-    border-bottom: 2px solid var(--pink-alias);
-    box-shadow: 0px -1 transparent, 0 2px var(--pink-alias), 0px 0 var(--pink-alias), 0 0px var(--pink-alias)!important;
+    font-size: clamp(1.25rem, 4.5vw, 1.75rem);
+    line-height: 1.3;
+    border-bottom: 2px solid rgba(99, 102, 241, 0.55);
+    box-shadow: none !important;
+    padding: var(--gap-xs) 0;
 }
 .team-list {
     display: flex;
-    width: 90%;
+    width: 100%;
     align-items: center;
-    justify-content: space-around;
+    justify-content: center;
     flex-wrap: wrap;
+    gap: var(--gap-md);
 }
 
 .title-block{
     display: flex;
     justify-content: space-between;
+    align-items: center;
     width: 100%;
-    margin-top: -28px;
+    margin-top: 0;
+    gap: var(--gap-md);
+    flex-wrap: wrap;
 }
 title-block.teams .title{
-    position: absolute;
-    bottom: 14px;
-    right: -170px;
+    position: static;
+    bottom: auto;
+    right: auto;
 }
 .title-block.teams{
     position: relative;
 }
 
 .title-block .title{
-    font-size: 1.7em;
-    color: #ffdf3f !important;
+    font-size: clamp(1.1rem, 3.5vw, 1.4rem);
+    color: var(--text-muted) !important;
+    margin: 0;
+    line-height: 1.2;
 }
 .team-list-items-wrapper{
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: var(--gap-md);
+    width: 100%;
+    max-width: 100%;
+    padding: var(--gap-xs) 0;
 }
-.settings-block.btn-start{
-    background-color: #FFFFFF;
-    font-size: 2em;
-    height: 11vh;
-    min-height: 8vh;
+
+.team-list-items-wrapper h1 {
+    flex-shrink: 0;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0px 10px 9px 4px rgba(0,0,0,0.75);
+    margin: 0;
+    font-size: clamp(1.5rem, 5vw, 2rem) !important;
+    line-height: 1 !important;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-1);
+    background: #374151;
+}
+.settings-block.btn-start{
+    background: linear-gradient(180deg, rgba(99, 102, 241, 0.95), rgba(79, 70, 229, 0.92));
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    font-size: clamp(1.125rem, 3.5vw, 1.5rem);
+    min-height: var(--btn-min-h);
+    padding: 14px var(--btn-pad-x);
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-1);
+    cursor: pointer;
 }
 .settings-block.btn-start h1, .settings-block.btn-start h2{
+    color: rgba(255, 255, 255, 0.96) !important;
     margin: 0;
+    font-size: inherit !important;
+    line-height: 1.25;
+    font-weight: 600;
 }
 
 .add-team p{
@@ -124,7 +176,106 @@ title-block.teams .title{
 
 .setting-game-play-btn{
     display: flex;
-    justify-content: space-evenly;
+    justify-content: flex-end;
+    gap: var(--gap-sm);
     position: relative;
-    right: 3vh;
+    right: 0;
+    flex-shrink: 0;
+}
+
+.icon-btn{
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-1);
+    background: #374151;
+    cursor: pointer;
+    padding: 0;
+}
+.icon-btn svg{
+    color: var(--text-muted);
+}
+
+.audio-settings{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-md);
+    padding: var(--gap-sm) 0;
+}
+.audio-setting-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-md);
+}
+.audio-setting-label{
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gap-sm);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+.audio-setting-label svg{
+    color: var(--text-muted);
+}
+
+/* The switch - the box around the slider */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 56px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* The slider */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(251, 113, 133, 0.55);
+    transition: .2s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 24px;
+    width: 24px;
+    left: 4px;
+    bottom: 4px;
+    background-color: #fff;
+    transition: .2s;
+}
+
+input:checked + .slider {
+    background-color: rgba(52, 211, 153, 0.65);
+}
+
+.slider.round {
+    border-radius: 32px;
+    filter: saturate(0.8);
+}
+
+.slider.round:before {
+    border-radius: 50%;
+    filter: drop-shadow(0px 0px 3px rgba(0,0,0,0.55));
+}
+
+input:checked + .slider:before {
+    transform: translateX(24px);
 }

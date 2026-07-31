@@ -12,23 +12,27 @@ interface ListWordsProps {
 
 interface ListWordsState {
     list: {
-        team: '',
-        listWords: {}
+        team: string,
+        listWords: {[k: string]: boolean},
+        streakBonus?: number
     }
 }
 
 class ListWordsComponent extends React.PureComponent <ListWordsProps, ListWordsState> {
+    /** Storage key may be "[Category] word"; UI shows only the word. */
+    displayWord = (storageKey: string) => storageKey.replace(/^\[[^\]]+\]\s+/, '')
+
     constructor(props: any) {
         super(props);
 
         this.state = {
             list: {
                 team: '',
-                listWords: {}
+                listWords: {},
+                streakBonus: 0,
             }
         }
     }
-
 
     componentDidMount() {
         const key = localStorage.getItem('currentTeam') || ''
@@ -40,33 +44,37 @@ class ListWordsComponent extends React.PureComponent <ListWordsProps, ListWordsS
             parsed = null
         }
         const safeList = parsed && typeof parsed === 'object'
-            ? parsed
-            : { team: key, listWords: {} }
+            ? {
+                team: parsed.team || key,
+                listWords: parsed.listWords || {},
+                streakBonus: Number(parsed.streakBonus) || 0,
+              }
+            : { team: key, listWords: {}, streakBonus: 0 }
         this.setState({list: safeList})
     }
 
-
     saveToStorage() {
-        let key: any = localStorage.getItem('currentTeam')
-        // @ts-ignore
+        const key = localStorage.getItem('currentTeam')
+        if (!key) return
         localStorage.setItem(key, JSON.stringify(this.state.list))
-    }
-
-    componentDidUpdate(prevProps: Readonly<ListWordsProps>, prevState: Readonly<ListWordsState>, snapshot?: any) {
-
     }
 
     changeStatus = (el: any) => {
         let listWords: any = this.state.list.listWords
         listWords[el] = !listWords[el]
-        let list = {team: this.state.list.team, listWords: listWords}
+        let list = {
+            team: this.state.list.team,
+            listWords: listWords,
+            streakBonus: this.state.list.streakBonus || 0,
+        }
         this.setState({list: list})
         this.saveToStorage()
     }
 
     onNext = () => {
         const key: string = localStorage.getItem('currentTeam') || ''
-        let results: { [name: string]: { name: string, trues: number, wrong: number } } | null = null
+        type TeamScore = { name: string, trues: number, wrong: number, bonus: number, score: number }
+        let results: { [name: string]: TeamScore } | null = null
         try {
             const raw = localStorage.getItem('results')
             results = raw ? JSON.parse(raw) : null
@@ -75,38 +83,28 @@ class ListWordsComponent extends React.PureComponent <ListWordsProps, ListWordsS
         }
 
         const {listWords} = this.state.list
-        let words = Object.keys(listWords).length
-        let truescounter = Object.values(listWords).filter(el => !!el).length
+        const words = Object.keys(listWords).length
+        const truescounter = Object.values(listWords).filter(el => !!el).length
+        const bonus = Number(this.state.list.streakBonus) || 0
+        const roundScore = truescounter + bonus
+
+        const apply = (prev?: TeamScore): TeamScore => ({
+            name: key,
+            trues: (prev ? prev.trues : 0) + truescounter,
+            wrong: (prev ? prev.wrong : 0) + (words - truescounter),
+            bonus: (prev ? (prev.bonus || 0) : 0) + bonus,
+            score: (prev ? (prev.score != null ? prev.score : prev.trues) : 0) + roundScore,
+        })
 
         if (!results) {
-            let saveObj = {
-                [key]: {
-                    name: key,
-                    trues: truescounter,
-                    wrong: words - truescounter
-                }
-            }
-            localStorage.setItem('results', JSON.stringify(saveObj))
-        } else
-            // @ts-ignore
-            if (!results[key]) {
-                let saveObj = {
-                    name: key,
-                    trues: truescounter,
-                    wrong: words - truescounter
-                }
-                // @ts-ignore
-                results[key] = saveObj
-                localStorage.setItem('results', JSON.stringify(results))
-            } else {
-                // @ts-ignore
-                let saveObj: { name: string, trues: number, wrong: number } = results[key]
-                saveObj.trues = saveObj.trues + truescounter
-                saveObj.wrong = saveObj.wrong + (words - truescounter)
-                // @ts-ignore
-                results[key] = saveObj
-                localStorage.setItem('results', JSON.stringify(results))
-            }
+            localStorage.setItem('results', JSON.stringify({ [key]: apply() }))
+        } else if (!results[key]) {
+            results[key] = apply()
+            localStorage.setItem('results', JSON.stringify(results))
+        } else {
+            results[key] = apply(results[key])
+            localStorage.setItem('results', JSON.stringify(results))
+        }
 
         this.props.onNext()
     }
@@ -115,17 +113,17 @@ class ListWordsComponent extends React.PureComponent <ListWordsProps, ListWordsS
         const {listWords} = this.state.list
         let words = Object.keys(listWords)
         let truescounter = Object.values(listWords).filter(el => !!el).length
+        const bonus = Number(this.state.list.streakBonus) || 0
         return (
             <div className={'word-list'}>
                 <div className={'word-list-wrapper'}>
                     {(words.map((el: string) =>
-                        <div className={'word-row'}>
-                            <h1 className={'word'}>{el}</h1>
+                        <div className={'word-row'} key={el}>
+                            <h1 className={'word'}>{this.displayWord(el)}</h1>
                             <div className={'buttons'}>
                                 <label className="switch">
                                     <input type="checkbox" onClick={() => this.changeStatus(el)}
-                                        // @ts-ignore
-                                           checked={listWords[el]}/>
+                                           checked={!!listWords[el]}/>
                                     <span className="slider round"/>
                                 </label>
                             </div>
@@ -142,6 +140,12 @@ class ListWordsComponent extends React.PureComponent <ListWordsProps, ListWordsS
                             <h2>Skipped:</h2>
                             <h3>{words.length - truescounter}</h3>
                         </div>
+                        {bonus > 0 && (
+                            <div className={'trues'}>
+                                <h2>Bonus:</h2>
+                                <h3>+{bonus}</h3>
+                            </div>
+                        )}
                     </div>
                     <div className={'btn'} onClick={this.onNext}>
                         <h1>Next</h1>
@@ -153,4 +157,3 @@ class ListWordsComponent extends React.PureComponent <ListWordsProps, ListWordsS
 }
 
 export default ListWordsComponent;
-

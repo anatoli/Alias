@@ -6,9 +6,14 @@ import './index.css'
 import TeamListItemComponent from "../TeamListItemComponent";
 import {playSound} from "../utils";
 
-import addIcon from '../../img/btn/add_btn.png'
-import settingsIcon from '../../img/btn/settings_btn.png'
 import ModalSettingsComponent from "./Modal-Settings-Window";
+import PersonAddIcon from '@material-ui/icons/PersonAdd';
+import TuneIcon from '@material-ui/icons/Tune';
+import MusicNoteIcon from '@material-ui/icons/MusicNote';
+import MusicOffIcon from '@material-ui/icons/MusicOff';
+import VolumeUpIcon from '@material-ui/icons/VolumeUp';
+import VolumeOffIcon from '@material-ui/icons/VolumeOff';
+import {WordPack} from "../GameFrameComponent/helpArray";
 
 
 interface SettingGameProps {
@@ -18,9 +23,14 @@ interface SettingGameProps {
         hardLevel: string,
         teams: any[],
         categories: any[],
+        wordPack?: WordPack,
         wordsToFinish: number
         showingFrame: string | undefined,
     }
+    soundEnabled: boolean
+    bgMusicEnabled: boolean
+    onToggleSound: (enabled: boolean) => void
+    onToggleBgMusic: (enabled: boolean) => void
 }
 
 interface SettingGameState {
@@ -28,6 +38,7 @@ interface SettingGameState {
     hardLevel: string,
     teams: any[],
     categories: any[],
+    wordPack: WordPack,
     wordsToFinish: number
     modalSettingsIsOpen: boolean
     showingFrame: string | undefined,
@@ -44,6 +55,7 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
             hardLevel: this.props.settings.hardLevel,
             teams: this.props.settings.teams,
             categories: this.props.settings.categories,
+            wordPack: this.props.settings.wordPack || 'classic',
             wordsToFinish: this.props.settings.wordsToFinish,
             modalSettingsIsOpen: false
         }
@@ -111,8 +123,12 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
                         <div className={'title-block'}>
                             <h2 className='title'>Teams:</h2>
                             <div className={'setting-game-play-btn add-team'}>
-                                <p onClick={this.addTeam}><img src={addIcon}/></p>
-                                <p onClick={this.openModalSettings}><img src={settingsIcon}/></p>
+                                <button type="button" className="icon-btn" onClick={this.addTeam} aria-label="Add team">
+                                    <PersonAddIcon />
+                                </button>
+                                <button type="button" className="icon-btn" onClick={this.openModalSettings} aria-label="Game settings">
+                                    <TuneIcon />
+                                </button>
                             </div>
 
                         </div>
@@ -121,6 +137,43 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
                                 <TeamListItemComponent name={el.name} index={i} delete={this.removeTeam} deleteAvailable={teams.length > 2}
                                                        onChange={this.changeNameOfTeam}/>
                             ))}
+                        </div>
+                    </div>
+
+                    <div className={'settings-block'}>
+                        <div className={'title-block'}>
+                            <h2 className='title'>Audio:</h2>
+                        </div>
+                        <div className="audio-settings">
+                            <div className="audio-setting-row">
+                                <div className="audio-setting-label">
+                                    {this.props.soundEnabled ? <VolumeUpIcon /> : <VolumeOffIcon />}
+                                    <span>Sounds</span>
+                                </div>
+                                <label className="switch">
+                                    <input
+                                        type="checkbox"
+                                        checked={this.props.soundEnabled}
+                                        onChange={(e) => this.props.onToggleSound(e.target.checked)}
+                                    />
+                                    <span className="slider round" />
+                                </label>
+                            </div>
+
+                            <div className="audio-setting-row">
+                                <div className="audio-setting-label">
+                                    {this.props.bgMusicEnabled ? <MusicNoteIcon /> : <MusicOffIcon />}
+                                    <span>Music</span>
+                                </div>
+                                <label className="switch">
+                                    <input
+                                        type="checkbox"
+                                        checked={this.props.bgMusicEnabled}
+                                        onChange={(e) => this.props.onToggleBgMusic(e.target.checked)}
+                                    />
+                                    <span className="slider round" />
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>

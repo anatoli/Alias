@@ -34,29 +34,18 @@ class ProgressBarComponent extends React.PureComponent <ProgressBarProps, Progre
 
     render() {
         const {progress} = this.props
+        const safe = Number.isFinite(progress) ? Math.max(0, Math.min(100, progress)) : 0
         return(
-            <div>
-
-
-                <div className="container">
-                    <input type="radio" className="radio" name="progress" value="five" id="five" checked={progress <6  && progress > 0 }/>
-
-                    <input type="radio" className="radio" name="progress" value="twentyfive" id="twentyfive"  checked={progress <26  && progress > 5 }/>
-
-
-                    <input type="radio" className="radio" name="progress" value="fifty" id="fifty" checked={progress <51  && progress > 25 }/>
-
-
-                    <input type="radio" className="radio" name="progress" value="seventyfive" id="seventyfive" checked={progress <76  && progress > 50 } />
-
-
-                    <input type="radio" className="radio" name="progress" value="onehundred" id="onehundred" checked={progress >75 && progress<101 }/>
-                    <div className="progress">
-                        <div className="progress-bar" style={{width: progress+'%'}}></div>
-                    </div>
+            <div className="container">
+                <div className="progress">
+                    <div
+                        className="progress-bar"
+                        style={{
+                            width: safe + '%',
+                            minWidth: safe > 0 ? 2 : 0,
+                        }}
+                    />
                 </div>
-
-
             </div>
         )
     }

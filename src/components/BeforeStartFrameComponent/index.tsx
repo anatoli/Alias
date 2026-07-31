@@ -46,18 +46,16 @@ class BeforeStartFrameComponent extends React.PureComponent <BeforeStartFramePro
     render() {
         const {teams} = this.props.settings
         return(
-            <div>
+            <div className="before-start">
                 <div className={'team-list'}>
                     {teams.map((el, i)=> (
                         <TeamListItemComponent name={el.name} index={i}/>
                     ))}
                 </div>
-                <div>
+                <div className="before-start-actions">
                     <div onClick={this.play} className={'settings-block btn-start'}>
                         <h1>Play</h1>
                     </div>
-                </div>
-                <div>
                     <div onClick={this.back} className={'settings-block btn-start'}>
                         <h1>Back</h1>
                     </div>

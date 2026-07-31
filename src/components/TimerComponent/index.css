@@ -1,7 +1,31 @@
 .timer.team-name, .timer h1 {
-    line-height: 1;
-    font-size: 6em;
+    line-height: 1.15;
+    margin: 0;
 }
-.timer{
-    height: 50vh;
+
+.timer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--gap-md);
+    min-height: min(40vh, 280px);
+    width: 100%;
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: var(--gap-lg) var(--page-pad);
+    text-align: center;
+}
+
+.timer .team-name {
+    font-size: clamp(1.25rem, 4vw, 1.75rem) !important;
+    font-weight: 600;
+    color: var(--text-muted) !important;
+    word-break: break-word;
+    max-width: 100%;
+}
+
+.timer h1:not(.team-name) {
+    font-size: clamp(3rem, 14vw, 5rem) !important;
+    font-weight: 700;
 }

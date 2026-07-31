@@ -27,6 +27,7 @@
     <platform name="android">
         <allow-intent href="market:*" />
         <preference name="SplashScreenBackgroundColor" value="#804cd4" />
+        <!-- Android SDK levels (compile/target). Requires corresponding SDK installed locally. -->
     </platform>
     <platform name="ios">
         <allow-intent href="itms:*" />

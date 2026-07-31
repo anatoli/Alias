@@ -4,3 +4,15 @@
 # Project exclude paths
 /plugins/admob-plus-cordova/scripts/iosNSAppTransportSecurity.js
 /plugins/admob-plus-cordova/scripts/util.js
+
+# IDE / OS
+.idea/
+
+# CRA build output (generated)
+/build/
+
+# Android signing (never commit)
+*.jks
+*.keystore
+alias-upload.credentials.txt
+release-signing.properties

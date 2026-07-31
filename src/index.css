@@ -4,40 +4,48 @@
   url("./fonts/DR_Agu_W00_Regular.woff") format("opentype")
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'DR_Agu_W00', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  display: flex;
-  align-items: center;
+  min-height: 100dvh;
+  min-height: 100vh;
 
-  background: rgb(0,0,0);
-  background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(52,58,64,1) 22%, rgba(134,135,135,1) 100%);
+  color: var(--text-primary);
+  background: radial-gradient(1100px 760px at 18% 0%, rgba(124, 58, 237, 0.32), transparent 58%),
+              radial-gradient(900px 700px at 92% 16%, rgba(34, 211, 238, 0.22), transparent 60%),
+              radial-gradient(900px 700px at 65% 95%, rgba(52, 211, 153, 0.10), transparent 62%),
+              linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 45%, var(--bg-2) 100%);
 }
 
 h1, h2,h3,h4,h5, button,button, button>span, p, .MuiButton-root {
   font-family: -apple-system, BlinkMacSystemFont, 'DR_Agu_W00', sans-serif !important;
-  color: var(--pink-alias) !important;
-  text-shadow: 4px 0 #00000085, 0 1px #00000085, 1px 0 #00000085, 0 -1px #00000085 !important;
+  color: var(--text-primary) !important;
+  text-shadow: none !important;
   font-weight: 500;
 }
 .global-fonts{
   font-family: -apple-system, BlinkMacSystemFont, 'DR_Agu_W00', sans-serif !important;
-  color: var(--pink-alias) !important;;
-  text-shadow: 4px 0 #00000085, 0 1px #00000085, 1px 0 #00000085, 0 -1px #00000085 !important;
-}
-
-@media screen and (max-width: 899px){
-  body{
-    justify-content: space-between;
-  }
-}
-
-@media screen and (min-width: 898px){
-  body{
-    justify-content: center;
-  }
+  color: var(--text-primary) !important;
+  text-shadow: none !important;
 }
 
 code {
@@ -46,11 +54,68 @@ code {
 }
 
 :root{
-  --yellow-alias: #ffde3f;
-  --pink-alias: #f87ba7;
-  --purpul-alias: #804cd4
+  /* Neon Party theme tokens (still dark, but more playful) */
+  --bg-0: #070a16;
+  --bg-1: #0b1226;
+  --bg-2: #0e1733;
+
+  /* Solid-ish surfaces (avoid "muddy glass") */
+  --surface-1: #0f1a3a;
+  --surface-2: #14214a;
+  --surface-3: #1a2b5c;
+
+  --border-1: rgba(255, 255, 255, 0.12);
+  --border-2: rgba(255, 255, 255, 0.18);
+
+  --text-primary: rgba(255, 255, 255, 0.92);
+  --text-muted: rgba(255, 255, 255, 0.62);
+
+  --accent: #7c3aed;   /* violet */
+  --accent-2: #22d3ee; /* cyan */
+  --accent-3: #34d399; /* mint */
+  --accent-4: #fb7185; /* pink */
+
+  --danger: #fb7185;
+  --success: #34d399;
+
+  --shadow-1: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --shadow-2: 0 18px 60px rgba(0, 0, 0, 0.45);
+  --glow-1: 0 0 0 1px rgba(34, 211, 238, 0.22), 0 10px 26px rgba(124, 58, 237, 0.22);
+  --glow-2: 0 0 0 1px rgba(52, 211, 153, 0.22), 0 12px 34px rgba(34, 211, 238, 0.18);
+
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+
+  /* Layout — consistent spacing & responsive */
+  --page-pad: clamp(12px, 3.5vw, 24px);
+  --content-max: 720px;
+  --gap-xs: 6px;
+  --gap-sm: 10px;
+  --gap-md: 16px;
+  --gap-lg: 24px;
+  --btn-min-h: 52px;
+  --btn-pad-x: clamp(16px, 4vw, 24px);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  /* Back-compat aliases used across existing CSS */
+  /* Previously "yellow card" — now a neutral elevated surface */
+  --yellow-alias: var(--surface-2);
+  /* Previously "pink text" — now primary text */
+  --pink-alias: var(--text-primary);
+  /* Previously "purple" — now accent */
+  --purpul-alias: var(--accent);
 }
 
 *:focus {
   outline: none;
+}
+
+/* Keyboard focus should remain visible (modern practice) */
+*:focus-visible {
+  outline: 3px solid rgba(99, 102, 241, 0.55);
+  outline-offset: 3px;
 }

@@ -1,10 +1,28 @@
 .btn-custom{
-    min-width: 37vh;
-    height: 5rem;
-    border-radius: 50px;
-    background-color: var(--yellow-alias);
-    margin-bottom: 20px;
-    font-size: 58px;
+    width: 100%;
+    max-width: min(92vw, 560px);
+    min-height: var(--btn-min-h);
+    padding: 14px var(--btn-pad-x);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 55%, var(--accent-3) 100%);
+    color: rgba(255, 255, 255, 0.96) !important;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: var(--shadow-1), var(--glow-1);
+    margin: 0 auto var(--gap-md);
+    font-size: clamp(1.125rem, 4.2vw, 1.75rem);
+    line-height: 1.25;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+}
+.btn-custom:active{
+    transform: translateY(1px);
+    filter: brightness(0.98);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35), var(--glow-2);
 }
 .btn-custom-category{
     min-width: 30vh;
@@ -30,32 +48,66 @@
 
 .body-wrapper{
     display: flex;
+    align-items: stretch;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    width: 100%;
+    max-width: min(100%, calc(var(--content-max) + 2 * var(--page-pad)));
+    margin: 0 auto;
+    flex: 1 1 auto;
+    min-height: 0;
+    position: relative;
+    padding-top: calc(var(--gap-lg) + 8px);
+}
+
+/* Active screen: fill remaining height for scrollable lists / game */
+.body-wrapper__screen {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    min-height: 0;
+    width: 100%;
+}
+
+.home-screen{
+    flex: 1 1 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    flex-wrap: wrap;
     justify-content: center;
-    height: inherit;
+    gap: var(--gap-md);
+    min-height: 0;
 }
 
 .button-bar{
     position: absolute;
-    z-index: 9999999;
+    z-index: 10;
     display: flex;
-    width: 10vw;
-    justify-content: space-between;
+    width: auto;
+    justify-content: flex-start;
 }
 
 .button-bar.right{
-    top: 20px;
-    right: 20px;
+    top: var(--gap-sm);
+    right: var(--gap-sm);
 }
 .button-bar.left{
-    top: 20px;
-    left: 20px;
+    top: var(--gap-sm);
+    left: var(--gap-sm);
 }
 .MuiSvgIcon-root{
-    filter:drop-shadow(2px 1px 2px black);
+    filter: none;
+    color: var(--text-muted) !important;
+    fill: currentColor;
 }
 .MuiMenu-list{
-    background-color: var(--yellow-alias);
-    color: var(--pink-alias);
+    background-color: #111827;
+    color: var(--text-primary);
+    border: 1px solid var(--border-1);
+    box-shadow: var(--shadow-2);
+    border-radius: var(--radius-md);
 }

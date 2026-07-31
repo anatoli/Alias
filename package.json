@@ -1,8 +1,8 @@
 {
-  "name": "radiofinder",
-  "displayName": "RadioFinder",
+  "name": "alias-bitte",
+  "displayName": "Alias, bitte",
   "version": "1.4.0",
-  "description": "RadioFinder",
+  "description": "Alias party game for friends and expats",
   "main": "index.js",
   "scripts": {
     "start": "node assets/scripts/start-dev.js",
@@ -11,7 +11,9 @@
     "cra:test": "react-scripts test",
     "cra:eject": "react-scripts eject",
     "emulator": "cordova clean && cordova run android --emulator",
-    "browser:build": "cordova clean && cordova build browser"
+    "browser:build": "cordova clean && cordova build browser",
+    "words:build": "node scripts/build-word-bank.js",
+    "postinstall": "node scripts/patch-cordova-exitcode.js"
   },
   "keywords": [
     "ecosystem:cordova"
@@ -40,7 +42,7 @@
     "@types/react": "16.8.19",
     "@types/react-dom": "16.8.4",
     "@types/webpack-env": "^1.13.9",
-    "cordova-android": "^12.0.0",
+    "cordova-android": "^15.0.0",
     "cordova-browser": "^6.0.0",
     "cordova-lib": "^11.0.0",
     "cordova-plugin-background-mode-alwaysmkt": "^0.7.3",

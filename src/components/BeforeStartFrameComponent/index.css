@@ -1,0 +1,23 @@
+.before-start {
+    width: 100%;
+    max-width: var(--content-max);
+    margin: 0 auto;
+    min-height: min(70vh, 560px);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: var(--gap-lg);
+    padding: var(--gap-lg) var(--page-pad);
+}
+
+.before-start .team-list{
+    padding: 0;
+}
+
+.before-start-actions{
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-md);
+}
+

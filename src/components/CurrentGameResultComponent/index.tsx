@@ -35,6 +35,11 @@ class CurrentGameResultComponent extends React.PureComponent <CurrentGameResultP
 
     playSound = playSound
 
+    teamScore = (el: any) => {
+        if (el && typeof el.score === 'number') return el.score
+        return (el.trues || 0) + (el.bonus || 0)
+    }
+
     componentDidMount() {
         let teams: any = {}
         try {
@@ -45,17 +50,12 @@ class CurrentGameResultComponent extends React.PureComponent <CurrentGameResultP
         }
 
         Object.values(teams).forEach((el:any)=>{
-            if(el.trues >= this.props.wordsToFinish){
+            if(this.teamScore(el) >= this.props.wordsToFinish){
                 this.setState({WINNER: true, teamWinner: el.name, openWinnerModal:true})
                 this.playSound('victory')
             }
         })
         this.setState({teams: teams})
-    }
-
-
-    componentDidUpdate(prevProps: Readonly<CurrentGameResultProps>, prevState: Readonly<CurrentGameResultState>, snapshot?: any) {
-
     }
 
     onNext = () => {
@@ -82,7 +82,13 @@ class CurrentGameResultComponent extends React.PureComponent <CurrentGameResultP
                         <h1 className={'word'}>Name</h1>
                         <div className={'buttons-wrapper'}>
                             <div className={'buttons'}>
+                                <h1>Score</h1>
+                            </div>
+                            <div className={'buttons'}>
                                 <h1>True</h1>
+                            </div>
+                            <div className={'buttons'}>
+                                <h1>Bonus</h1>
                             </div>
                             <div className={'buttons'}>
                                 <h1>Wrong</h1>
@@ -91,11 +97,17 @@ class CurrentGameResultComponent extends React.PureComponent <CurrentGameResultP
 
                     </div>
                     {Object.values(teams).map((el:any)=>
-                        <div className={'word-row'}>
+                        <div className={'word-row'} key={el.name}>
                             <h1 className={'word'}>{el.name}</h1>
                             <div className={'buttons-wrapper'}>
                                 <div className={'buttons'}>
+                                        <h1>{this.teamScore(el)}</h1>
+                                </div>
+                                <div className={'buttons'}>
                                         <h1>{el.trues}</h1>
+                                </div>
+                                <div className={'buttons'}>
+                                        <h1>{el.bonus || 0}</h1>
                                 </div>
                                 <div className={'buttons'}>
                                         <h1>{el.wrong}</h1>
@@ -116,4 +128,3 @@ class CurrentGameResultComponent extends React.PureComponent <CurrentGameResultP
 }
 
 export default CurrentGameResultComponent;
-

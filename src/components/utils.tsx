@@ -116,3 +116,14 @@ export const playSound = (event:string) =>{
         })
     }
 }
+
+/** Light haptic feedback (Android WebView / supported browsers). */
+export function haptic(pattern: number | number[] = 10) {
+    try {
+        if (typeof navigator !== 'undefined' && typeof (navigator as any).vibrate === 'function') {
+            ;(navigator as any).vibrate(pattern)
+        }
+    } catch {
+        // ignore
+    }
+}

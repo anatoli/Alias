@@ -4,31 +4,17 @@ import './BodyComponent.css';
 import SettingGameComponent from "./SettingGameComponent";
 import BeforeStartFrameComponent from "./BeforeStartFrameComponent";
 import TimerComponent from "./TimerComponent";
-import GameFrameComponent from "./GameFrameComponent";
+import GameFrameComponent, {resetSessionDeck} from "./GameFrameComponent";
 import ListWordsComponent from "./ListWordsComponent";
 import CurrentGameResultComponent from "./CurrentGameResultComponent";
+import RulesComponent from "./RulesComponent";
 import {playSound} from "./utils";
 import ButtonComponent from "./ButtonComponent";
-
-type ExpatCategory =
-    | 'Bureaucracy'
-    | 'Work'
-    | 'German Language'
-    | 'Transport'
-    | 'Social Life'
-    | 'Stereotypes'
-    | 'Expat Life'
-    | 'Cringe Situations'
-    | 'IT / Tech'
-    | 'Absurd / Meme'
-import VolumeMuteIcon from '@material-ui/icons/VolumeMute';
-import VolumeOffIcon from '@material-ui/icons/VolumeOff';
-import VolumeOffOutlinedIcon from '@material-ui/icons/VolumeOffOutlined'
-import SettingsIcon from '@material-ui/icons/Settings';
-
-import MusicNoteIcon from '@material-ui/icons/MusicNote';
-import MusicOffIcon from '@material-ui/icons/MusicOff';
-import {Button, Menu, MenuItem} from '@material-ui/core';
+import NoAdsModalComponent from "./NoAdsModalComponent";
+import {startWordBankSync} from "../services/wordSync";
+import {initAds, showInterstitialAfterRound} from "../services/ads";
+import {hasNoAdsSubscription} from "../services/subscription";
+import {ExpatCategory, WordPack} from "./GameFrameComponent/helpArray";
 // @ts-ignore
 import bgMusicSrc from "../res/audio/bg_sound.mp3"
 
@@ -40,16 +26,15 @@ interface BodyComponentProps {
 interface BodyComponentState {
 
     showingFrame: string | undefined,
-    menuSettingsIsOpen: boolean,
-    sound:boolean,
     bgMusic: boolean,
-    anchorEl: undefined,
+    showNoAdsModal: boolean,
     stateSettings: {
         showingFrame: undefined,
         time: number,
         hardLevel: string,
         teams: any[],
         categories: ExpatCategory[],
+        wordPack: WordPack,
         wordsToFinish: 30
     }
 
@@ -61,14 +46,13 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
 
         this.state = {
             showingFrame: undefined,
-            menuSettingsIsOpen: false,
-            sound:true,
             bgMusic: true,
-            anchorEl: undefined,
+            showNoAdsModal: false,
             stateSettings: {
                 showingFrame: undefined,
                 time: 30,
                 hardLevel: 'NORMAL',
+                wordPack: 'classic' as WordPack,
                 teams: [{name: 'Player 1'}, {name: 'Player 2'} ],
                 categories: [
                     'Bureaucracy',
@@ -100,6 +84,11 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
 
         const bgEnabled = localStorage.getItem('bg-music') === 'true'
         this.setState({ bgMusic: bgEnabled })
+
+        // Local word bank immediately; remote updates in background
+        startWordBankSync()
+        // Preload interstitial when Cordova/AdMob is ready
+        void initAds()
     }
 
     setType = (type: string) =>{
@@ -121,6 +110,7 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
     }
 
     beforeStartGame = (stateSettings:any) => {
+        resetSessionDeck()
         this.setState({stateSettings:stateSettings})
         this.setType('Start')
     }
@@ -177,8 +167,17 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
         this.setType('PlayGame')
     }
 
-    showResults = () =>{
+    showResults = async () => {
+        const adResult = await showInterstitialAfterRound()
         this.setType('CurrentGameResult')
+        // Offer subscription only after a real ad was shown & closed
+        if (adResult === 'shown' && !hasNoAdsSubscription()) {
+            window.setTimeout(() => {
+                if (!hasNoAdsSubscription()) {
+                    this.setState({ showNoAdsModal: true })
+                }
+            }, 300)
+        }
     }
 
     onFinishGameFrame = (wordList:any) =>{
@@ -194,6 +193,7 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
         localStorage.removeItem('teamsActiveList')
         localStorage.removeItem('currentTeam')
         localStorage.removeItem('results')
+        resetSessionDeck()
         this.state.stateSettings.teams.map(el=>{
             localStorage.removeItem(el.name)
         })
@@ -203,10 +203,26 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
     getComponent = (toSchow='Category') => {
         switch (toSchow) {
             case 'Rules': {
-                return <div><h2>Rules</h2></div>
+                return <RulesComponent onBack={() => this.setState({showingFrame: undefined})} />
             }
             case 'Settings': {
-                return <SettingGameComponent onStartGame={this.beforeStartGame} settings={this.state.stateSettings}/>
+                const soundEnabled = localStorage.getItem('sound-effect') !== 'false'
+                return (
+                    <SettingGameComponent
+                        onStartGame={this.beforeStartGame}
+                        settings={this.state.stateSettings}
+                        soundEnabled={soundEnabled}
+                        bgMusicEnabled={this.state.bgMusic}
+                        onToggleSound={(enabled) => {
+                            localStorage.setItem('sound-effect', enabled ? 'true' : 'false')
+                            this.forceUpdate()
+                        }}
+                        onToggleBgMusic={(enabled) => {
+                            localStorage.setItem('bg-music', enabled ? 'true' : 'false')
+                            this.setState({ bgMusic: enabled })
+                        }}
+                    />
+                )
             }
             case 'Start': {
                 return <BeforeStartFrameComponent onPlayGame={this.onPlayGame} onBackToSettings={this.onBackToSettings} settings={this.state.stateSettings}/>
@@ -226,22 +242,6 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
         }
     }
 
-    openMenuSettings = (event: any) => {
-        this.setState({menuSettingsIsOpen: true, anchorEl: event.currentTarget})
-    }
-    closeMenuSettings =() =>{
-        this.setState({menuSettingsIsOpen: false})
-    }
-    soundOff =() =>{
-        localStorage.setItem('sound-effect', 'false')
-        this.setState({sound: false})
-    }
-
-    soundOn =() =>{
-        localStorage.setItem('sound-effect', 'true')
-        this.setState({sound: true})
-    }
-
     bgMusicOff =() =>{
         localStorage.setItem('bg-music', 'false')
         this.setState({bgMusic: false})
@@ -254,57 +254,15 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
 
 
     render() {
-        const {menuSettingsIsOpen, anchorEl} = this.state;
         return (
             <div className={'body-wrapper'}>
                 {this.state.bgMusic &&
                 // @ts-ignore
                     <audio src={bgMusicSrc} autoPlay loop></audio>
                 }
-                <div className={'button-bar left'}>
-                    {!Boolean(menuSettingsIsOpen) &&
-                    <div className="" onClick={this.openMenuSettings}>
-                        <SettingsIcon style={{color: "#fff"}}> </SettingsIcon>
-                    </div>
-                    }
-                    {Boolean(menuSettingsIsOpen) &&
-                    <Menu
-                        id="simple-menu"
-                        anchorEl={anchorEl}
-                        keepMounted
-                        open={Boolean(menuSettingsIsOpen)}
-                        onClose={this.closeMenuSettings}
-                    >
-                        <MenuItem onClick={this.closeMenuSettings}>
-                            {this.state.sound &&
-                            <div className="" onClick={this.soundOff}>
-                                <VolumeMuteIcon style={{color: "#fff"}}>Off</VolumeMuteIcon>
-                            </div>
-                            }
-                            {!this.state.sound &&
-                            <div className="" onClick={this.soundOn}>
-                                <VolumeOffOutlinedIcon style={{color: "#fff"}}>On</VolumeOffOutlinedIcon>
-                            </div>
-                            }
-                        </MenuItem>
-                        <MenuItem onClick={this.closeMenuSettings}>
-                            {this.state.bgMusic &&
-                            <div className="" onClick={this.bgMusicOff}>
-                                <MusicNoteIcon style={{color: "#fff"}}>Off</MusicNoteIcon>
-                            </div>
-                            }
-                            {!this.state.bgMusic &&
-                            <div className="" onClick={this.bgMusicOn}>
-                                <MusicOffIcon style={{color: "#fff"}}>On</MusicOffIcon>
-                            </div>
-                            }
-                        </MenuItem>
-                    </Menu>
-                    }
-                </div>
                     {!this.state.showingFrame &&
                     <>
-                        <div>
+                        <div className="home-screen">
                             <button className={'btn-custom'} onClick={(node) =>this.setType('Settings')}>Start</button>
                             <button className={'btn-custom'}  onClick={(node) => this.setType('Rules')}>Rules</button>
                         </div>
@@ -312,10 +270,16 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
                     }
 
                     {this.state.showingFrame &&
-                    <div>
+                    <div className="body-wrapper__screen">
                         {this.getComponent(this.state.showingFrame)}
                     </div>
                     }
+
+                <NoAdsModalComponent
+                    open={this.state.showNoAdsModal}
+                    onClose={() => this.setState({ showNoAdsModal: false })}
+                    onSubscribed={() => this.setState({ showNoAdsModal: false })}
+                />
 
             </div>
         );

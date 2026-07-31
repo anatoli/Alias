@@ -18,7 +18,7 @@ const styles = (theme: Theme) =>
         root: {
             margin: 0,
             padding: theme.spacing(4),
-            background: '#804cd4',
+            background: 'transparent',
             paddingBottom: theme.spacing(2)
 
         },
@@ -47,7 +47,7 @@ const DialogTitle = withStyles(styles)((props: DialogTitleProps) => {
 const DialogContent = withStyles((theme: Theme) => ({
     root: {
         padding: theme.spacing(2),
-        background: '#804cd4'
+        background: 'transparent'
     },
 }))(MuiDialogContent);
 
@@ -55,7 +55,7 @@ const DialogActions = withStyles((theme: Theme) => ({
     root: {
         margin: 0,
         padding: theme.spacing(2),
-        background: '#804cd4'
+        background: 'transparent'
     },
 }))(MuiDialogActions);
 

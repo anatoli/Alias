@@ -1,18 +1,29 @@
 .word-row{
     display: flex;
     justify-content: space-between;
-    min-width: 25vw;
+    align-items: center;
+    gap: var(--gap-md);
+    padding: var(--gap-sm) 0;
+    width: 100%;
+    min-width: 0;
 }
 .results .word-row h3{
 }
 
 .word-row.header{
-    border-bottom: 1px solid var(--yellow-alias);
+    border-bottom: 1px solid var(--border-1);
     filter: unset;
 }
 
 .word{
-    color: #FFFFFF !important;
+    color: var(--text-primary) !important;
+    font-size: clamp(1rem, 3.5vw, 1.35rem);
+    line-height: 1.25;
+    margin: 0;
+    text-align: left;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .icon{
@@ -22,7 +33,9 @@
 }
 
 .results .buttons{
-    width: 20vw;
+    width: auto;
+    min-width: 72px;
+    flex-shrink: 0;
 }
 .buttons{
     display: flex;
@@ -31,10 +44,15 @@
 }
 
 .results-wrapper{
-    width: 80vw;
+    width: 100%;
+    max-width: var(--content-max);
+    margin: 0 auto;
     overflow: auto;
-    height: 80vh;
-    padding: 2vw 0;
+    -webkit-overflow-scrolling: touch;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: min(65vh, 560px);
+    padding: var(--gap-md) var(--page-pad);
 }
 
 /* The switch - the box around the slider */
@@ -60,7 +78,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: var(--pink-alias);
+    background-color: rgba(251, 113, 133, 0.55);
     -webkit-transition: .4s;
     transition: .4s;
 }
@@ -78,7 +96,7 @@
 }
 
 input:checked + .slider {
-    background-color: var(--yellow-alias);
+    background-color: rgba(52, 211, 153, 0.65);
 }
 
 input:focus + .slider {
@@ -102,54 +120,74 @@ input:checked + .slider:before {
     filter: drop-shadow(0px 0px 3px black);
 }
 .results .btn {
-    background-color: #FFFFFF;
-    width: 35%;
-    height: 10vh;
-    min-height: 8vh;
-    border-radius: 15px;
+    background: linear-gradient(180deg, rgba(99, 102, 241, 0.95), rgba(79, 70, 229, 0.92));
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: var(--btn-min-h);
+    width: auto;
+    height: auto;
+    padding: 12px var(--gap-md);
+    border-radius: var(--radius-md);
     align-items: center;
     justify-content: center;
-    box-shadow: 0px 10px 9px 4px rgba(0,0,0,0.75);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: var(--shadow-1);
     display: flex;
 }
 
 .results .btn>h1{
-    line-height: 1;
+    line-height: 1.25 !important;
     margin: 0;
     padding: 0;
+    color: rgba(255, 255, 255, 0.96) !important;
+    font-size: clamp(1rem, 3.8vw, 1.35rem) !important;
+    font-weight: 600 !important;
 }
 
 .results .footer{
     display: flex;
-    width: 100vw;
-    justify-content: space-around;
-    min-height: 20vh;
+    width: 100%;
+    max-width: var(--content-max);
+    margin: 0 auto;
+    justify-content: center;
     align-items: center;
-    background-color: #804cd4bf;
-    border-top: 1px solid #80008082;
+    gap: var(--gap-md);
+    min-height: calc(var(--btn-min-h) + var(--gap-lg));
+    padding: var(--gap-md) var(--page-pad);
+    padding-bottom: calc(var(--gap-md) + var(--safe-bottom));
+    box-sizing: border-box;
+    background: #111827;
+    border-top: 1px solid var(--border-1);
+    flex-shrink: 0;
 }
 
 .results{
-    justify-content: space-between;
+    justify-content: flex-start;
     display: flex;
     flex-flow: column;
-    align-items: center;
-    background-color: #804cd4bf;
+    align-items: stretch;
+    width: 100%;
+    max-width: 100%;
+    min-height: 0;
+    flex: 1 1 auto;
+    background: #111827;
 }
 
 .result-counter{
-    width: 35%;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 220px;
     display: flex;
     flex-flow: column;
-    justify-content: space-evenly;
-    gap: 20px;
+    justify-content: center;
+    gap: var(--gap-sm);
 }
 
 .result-counter .false{
-    color: var(--pink-alias);
+    color: rgba(251, 113, 133, 0.92) !important;
 }
 .result-counter .trues h2{
-    color: var(--yellow-alias) !important;
+    color: rgba(52, 211, 153, 0.92) !important;
 }
 
 .trues, .false{
@@ -158,10 +196,23 @@ input:checked + .slider:before {
     align-items: center;
 }
 
+.result-counter h2, .result-counter h3{
+    font-size: clamp(0.95rem, 3vw, 1.2rem);
+}
+
 .result-counter h3{
-    color: #FFFFFF!important;
+    color: var(--text-primary)!important;
 }
 
 .buttons-wrapper{
     display: flex;
+    gap: var(--gap-md);
+    align-items: center;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+.word-row.header .word {
+    font-weight: 600;
+    color: var(--text-muted) !important;
 }
