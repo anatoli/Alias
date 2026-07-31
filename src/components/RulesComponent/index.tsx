@@ -31,7 +31,9 @@ class RulesComponent extends React.PureComponent<RulesProps> {
               <strong>Streak bonus:</strong> from 3 correct in a row, each hit gives +1 bonus point.
             </li>
             <li>
-              First team to reach the target score wins.
+              After a team reaches the target, finish the round so every team
+              gets the same number of turns. Highest score wins; if tied, keep
+              playing until one team leads.
             </li>
             <li>
               Choose pack in settings: <em>Classic</em> (by difficulty) or <em>Expat DE</em> (categories).

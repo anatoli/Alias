@@ -14,11 +14,14 @@ interface CurrentGameResultProps {
     wordsToFinish: number
 }
 
+type EndPhase = 'playing' | 'catchup' | 'overtime' | 'winner'
+
 interface CurrentGameResultState {
     teams : {},
     WINNER: boolean,
     openWinnerModal: boolean,
-    teamWinner:string
+    teamWinner:string,
+    endPhase: EndPhase
 }
 
 class CurrentGameResultComponent extends React.PureComponent <CurrentGameResultProps, CurrentGameResultState> {
@@ -29,7 +32,8 @@ class CurrentGameResultComponent extends React.PureComponent <CurrentGameResultP
             teams : {},
             WINNER: false,
             openWinnerModal: false,
-            teamWinner: ''
+            teamWinner: '',
+            endPhase: 'playing'
         }
     }
 
@@ -40,22 +44,83 @@ class CurrentGameResultComponent extends React.PureComponent <CurrentGameResultP
         return (el.trues || 0) + (el.bonus || 0)
     }
 
-    componentDidMount() {
-        let teams: any = {}
+    safeParse = <T,>(raw: string | null, fallback: T): T => {
         try {
-            const raw = localStorage.getItem('results')
-            teams = raw ? JSON.parse(raw) : {}
+            return raw ? JSON.parse(raw) as T : fallback
         } catch {
-            teams = {}
+            return fallback
+        }
+    }
+
+    /** Round is finished when every configured team has taken a turn this lap. */
+    isRoundComplete = (teamNames: string[]) => {
+        const teamsActiveList = this.safeParse<Record<string, boolean>>(
+            localStorage.getItem('teamsActiveList'),
+            {}
+        )
+        if (teamNames.length === 0) return false
+        return teamNames.every((name) => teamsActiveList[name] === true)
+    }
+
+    /**
+     * Alias endgame:
+     * - Someone reaches target → finish the current round (equal turns).
+     * - Then highest score wins.
+     * - On a tie at/above target → keep playing until one team leads.
+     */
+    resolveEndGame = (teams: Record<string, any>, wordsToFinish: number): {
+        phase: EndPhase
+        winnerName?: string
+    } => {
+        const teamsActiveList = this.safeParse<Record<string, boolean>>(
+            localStorage.getItem('teamsActiveList'),
+            {}
+        )
+        const teamNames = Object.keys(teamsActiveList).length > 0
+            ? Object.keys(teamsActiveList)
+            : Object.keys(teams)
+
+        const scores = teamNames.map((name) => ({
+            name,
+            score: teams[name] ? this.teamScore(teams[name]) : 0
+        }))
+
+        const anyoneAtTarget = scores.some((s) => s.score >= wordsToFinish)
+        if (!anyoneAtTarget) {
+            return { phase: 'playing' }
         }
 
-        Object.values(teams).forEach((el:any)=>{
-            if(this.teamScore(el) >= this.props.wordsToFinish){
-                this.setState({WINNER: true, teamWinner: el.name, openWinnerModal:true})
-                this.playSound('victory')
-            }
-        })
-        this.setState({teams: teams})
+        if (!this.isRoundComplete(teamNames)) {
+            return { phase: 'catchup' }
+        }
+
+        const maxScore = Math.max(...scores.map((s) => s.score), 0)
+        const leaders = scores.filter((s) => s.score === maxScore)
+
+        if (leaders.length === 1 && maxScore >= wordsToFinish) {
+            return { phase: 'winner', winnerName: leaders[0].name }
+        }
+
+        return { phase: 'overtime' }
+    }
+
+    componentDidMount() {
+        const teams = this.safeParse<Record<string, any>>(localStorage.getItem('results'), {})
+        const { phase, winnerName } = this.resolveEndGame(teams, this.props.wordsToFinish)
+
+        if (phase === 'winner' && winnerName) {
+            this.setState({
+                teams,
+                WINNER: true,
+                teamWinner: winnerName,
+                openWinnerModal: true,
+                endPhase: 'winner'
+            })
+            this.playSound('victory')
+            return
+        }
+
+        this.setState({ teams, endPhase: phase, WINNER: false })
     }
 
     onNext = () => {
@@ -70,8 +135,21 @@ class CurrentGameResultComponent extends React.PureComponent <CurrentGameResultP
         this.setState({openWinnerModal:false});
     };
 
+    endPhaseMessage = () => {
+        const { endPhase } = this.state
+        const target = this.props.wordsToFinish
+        if (endPhase === 'catchup') {
+            return `Target ${target} reached — finish the round so every team gets a turn.`
+        }
+        if (endPhase === 'overtime') {
+            return `Tied at the target — keep playing until one team leads.`
+        }
+        return null
+    }
+
     render() {
-        const {teams, WINNER, teamWinner, openWinnerModal}= this.state
+        const {teams, WINNER, teamWinner, openWinnerModal, endPhase}= this.state
+        const statusMessage = this.endPhaseMessage()
         return(
             <div className={'results'}>
                 <div>
@@ -98,7 +176,7 @@ class CurrentGameResultComponent extends React.PureComponent <CurrentGameResultP
                     </div>
                     {Object.values(teams).map((el:any)=>
                         <div className={'word-row'} key={el.name}>
-                            <h1 className={'word'}>{el.name}</h1>
+                            <h1 className={'word'} title={el.name}>{el.name}</h1>
                             <div className={'buttons-wrapper'}>
                                 <div className={'buttons'}>
                                         <h1>{this.teamScore(el)}</h1>
@@ -116,6 +194,9 @@ class CurrentGameResultComponent extends React.PureComponent <CurrentGameResultP
                         </div>
                     )}
                 </div>
+                {statusMessage && (
+                    <p className={`results-status results-status--${endPhase}`}>{statusMessage}</p>
+                )}
                 <div className={'footer'}>
                     <div className={'btn'} onClick={this.onRestart}><h1>Restart</h1></div>
                     {!WINNER &&
