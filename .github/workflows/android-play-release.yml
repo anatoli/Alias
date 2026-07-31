@@ -115,24 +115,59 @@ jobs:
         id: aab
         run: |
           set -euo pipefail
-          AAB=$(find platforms/android -path '*/outputs/bundle/*/*.aab' -o -name '*-release.aab' | head -n 1)
-          if [ -z "${AAB}" ]; then
-            AAB=$(find platforms/android -name '*.aab' | head -n 1)
+          echo "Looking for release AAB..."
+          find platforms/android -name '*.aab' -print || true
+
+          AAB=""
+          # Prefer the Cordova/Gradle release bundle path
+          shopt -s nullglob
+          release_aabs=(
+            platforms/android/app/build/outputs/bundle/release/*.aab
+            platforms/android/app/build/outputs/bundle/releaseBundle/*.aab
+          )
+          shopt -u nullglob
+          if [ ${#release_aabs[@]} -gt 0 ]; then
+            AAB="${release_aabs[0]}"
           fi
-          echo "path=$AAB" >> "$GITHUB_OUTPUT"
-          test -n "$AAB"
-          test -f "$AAB"
-          ls -la "$AAB"
-          # jarsigner often exits 1 on cert-chain warnings even when the bundle is signed
-          set +e
-          jarsigner -verify -verbose -certs "$AAB" 2>&1 | tee /tmp/aab-verify.txt
-          set -e
-          if ! grep -qiE 'jar verified|verified\.' /tmp/aab-verify.txt; then
-            echo "::error::AAB signature verification failed"
-            tail -n 80 /tmp/aab-verify.txt || true
+
+          if [ -z "$AAB" ]; then
+            # find -quit avoids SIGPIPE under pipefail (unlike find | head)
+            AAB=$(find platforms/android -name '*.aab' -print -quit || true)
+          fi
+          echo "Selected AAB: ${AAB:-<none>}"
+          if [ -z "$AAB" ] || [ ! -f "$AAB" ]; then
+            echo "::error::No AAB file found under platforms/android"
             exit 1
           fi
-          echo "AAB signature OK: $AAB"
+
+          echo "path=$AAB" >> "$GITHUB_OUTPUT"
+          ls -la "$AAB"
+
+          # Prefer keytool summary (stable); jarsigner -verbose is noisy and often exits 1 on warnings
+          set +e
+          keytool -printcert -jarfile "$AAB" > /tmp/aab-cert.txt 2>&1
+          KEYTOOL_RC=$?
+          jarsigner -verify "$AAB" > /tmp/aab-verify.txt 2>&1
+          JARSIGNER_RC=$?
+          set -e
+
+          echo "===== keytool (rc=$KEYTOOL_RC) ====="
+          cat /tmp/aab-cert.txt || true
+          echo "===== jarsigner (rc=$JARSIGNER_RC) ====="
+          cat /tmp/aab-verify.txt || true
+
+          if grep -qiE 'Not a signed jar file|jar is unsigned|no manifest' /tmp/aab-verify.txt /tmp/aab-cert.txt; then
+            echo "::error::AAB appears unsigned"
+            exit 1
+          fi
+
+          if grep -qiE 'jar verified|Owner:|Signer|Certificate fingerprints' /tmp/aab-verify.txt /tmp/aab-cert.txt; then
+            echo "AAB signature OK: $AAB"
+            exit 0
+          fi
+
+          echo "::error::Could not confirm AAB signature"
+          exit 1
       - name: Upload to Google Play
         uses: r0adkll/upload-google-play@v1
         with:
