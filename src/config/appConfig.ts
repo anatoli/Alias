@@ -20,4 +20,12 @@ export const APP_CONFIG = {
 
   /** Soft offer price label shown in UI (real price comes from Play) */
   subscriptionOfferLabel: '6 months — special discount',
+
+  /**
+   * Future Play product ids for unique word packs (IAP / pack subscription).
+   * Wire in billing when products exist in Play Console.
+   */
+  packProductIds: {
+    seasonal: 'alias_pack_seasonal',
+  } as Record<string, string>,
 }

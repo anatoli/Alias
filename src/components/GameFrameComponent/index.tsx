@@ -10,6 +10,7 @@ import BlockIcon from '@material-ui/icons/Block';
 import {playSound, haptic} from "../utils";
 import {EXPAT_DECK, HardLevel, ExpatCategory, WordPack} from "./helpArray";
 import {getWordsForLevel} from "../../services/wordSync";
+import {getCustomPack} from "../../services/customPacks";
 
 type Card = { category?: ExpatCategory, text: string }
 
@@ -25,6 +26,7 @@ interface GameFrameProps {
         teams: any,
         categories?: ExpatCategory[],
         wordPack?: WordPack,
+        customPackId?: string,
         wordsToFinish: any
     }
 }
@@ -93,7 +95,8 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
         const pack = (this.props.settings.wordPack || 'classic') as WordPack
         const level = String(this.props.settings.hardLevel || 'NORMAL').toUpperCase()
         const cats = (this.props.settings.categories || []).slice().sort().join('|')
-        return `${pack}|${level}|${cats}`
+        const customId = this.props.settings.customPackId || ''
+        return `${pack}|${level}|${cats}|${customId}`
     }
 
     loadOrBuildDeck = (): Card[] => {
@@ -120,6 +123,11 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
 
     buildDeckSource = (): Card[] => {
         const pack = (this.props.settings.wordPack || 'classic') as WordPack
+        if (pack === 'custom') {
+            const custom = getCustomPack(String(this.props.settings.customPackId || ''))
+            const words = custom && custom.words.length > 0 ? custom.words : ['Add words in Settings']
+            return words.map((text) => ({ text }))
+        }
         if (pack === 'expat') {
             const selected = this.props.settings.categories
             const categories = (selected && selected.length > 0 ? selected : (Object.keys(EXPAT_DECK) as ExpatCategory[]))

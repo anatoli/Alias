@@ -13,7 +13,8 @@ import ButtonComponent from "./ButtonComponent";
 import NoAdsModalComponent from "./NoAdsModalComponent";
 import {startWordBankSync} from "../services/wordSync";
 import {initAds, showInterstitialAfterRound} from "../services/ads";
-import {hasNoAdsSubscription} from "../services/subscription";
+import {canShowNoAdsOffer, hasNoAdsSubscription, markNoAdsOfferShown} from "../services/subscription";
+import {loadGameSettings, saveGameSettings} from "../services/gameSettings";
 import {ExpatCategory, WordPack} from "./GameFrameComponent/helpArray";
 // @ts-ignore
 import bgMusicSrc from "../res/audio/bg_sound.mp3"
@@ -35,7 +36,8 @@ interface BodyComponentState {
         teams: any[],
         categories: ExpatCategory[],
         wordPack: WordPack,
-        wordsToFinish: 30
+        customPackId: string,
+        wordsToFinish: number
     }
 
 }
@@ -44,29 +46,14 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
     constructor(props:any) {
         super(props);
 
+        const saved = loadGameSettings()
         this.state = {
             showingFrame: undefined,
             bgMusic: true,
             showNoAdsModal: false,
             stateSettings: {
                 showingFrame: undefined,
-                time: 30,
-                hardLevel: 'NORMAL',
-                wordPack: 'classic' as WordPack,
-                teams: [{name: 'Player 1'}, {name: 'Player 2'} ],
-                categories: [
-                    'Bureaucracy',
-                    'Work',
-                    'German Language',
-                    'Transport',
-                    'Social Life',
-                    'Stereotypes',
-                    'Expat Life',
-                    'Cringe Situations',
-                    'IT / Tech',
-                    'Absurd / Meme',
-                ],
-                wordsToFinish: 30
+                ...saved,
             }
         }
     }
@@ -111,7 +98,21 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
 
     beforeStartGame = (stateSettings:any) => {
         resetSessionDeck()
-        this.setState({stateSettings:stateSettings})
+        const persisted = saveGameSettings({
+            time: stateSettings.time,
+            hardLevel: stateSettings.hardLevel,
+            teams: stateSettings.teams,
+            categories: stateSettings.categories,
+            wordPack: stateSettings.wordPack,
+            customPackId: stateSettings.customPackId,
+            wordsToFinish: stateSettings.wordsToFinish,
+        })
+        this.setState({
+            stateSettings: {
+                showingFrame: undefined,
+                ...persisted,
+            },
+        })
         this.setType('Start')
     }
 
@@ -170,12 +171,12 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
     showResults = async () => {
         const adResult = await showInterstitialAfterRound()
         this.setType('CurrentGameResult')
-        // Offer subscription only after a real ad was shown & closed
-        if (adResult === 'shown' && !hasNoAdsSubscription()) {
+        // Offer subscription after a real ad — at most once per hour
+        if (adResult === 'shown' && canShowNoAdsOffer()) {
             window.setTimeout(() => {
-                if (!hasNoAdsSubscription()) {
-                    this.setState({ showNoAdsModal: true })
-                }
+                if (!canShowNoAdsOffer()) return
+                markNoAdsOfferShown()
+                this.setState({ showNoAdsModal: true })
             }, 300)
         }
     }

@@ -14,7 +14,7 @@ export type ExpatCategory =
 
 export type CategoryDeck = Record<ExpatCategory, string[]>
 export type HardLevel = 'EASY' | 'NORMAL' | 'HARD'
-export type WordPack = 'classic' | 'expat'
+export type WordPack = 'classic' | 'expat' | 'custom'
 
 /** Bundled difficulty decks (700 each). Prefer wordSync cache at runtime. */
 export const WORDS: Record<HardLevel, string[]> = {

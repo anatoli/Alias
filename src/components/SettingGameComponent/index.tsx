@@ -14,6 +14,7 @@ import MusicOffIcon from '@material-ui/icons/MusicOff';
 import VolumeUpIcon from '@material-ui/icons/VolumeUp';
 import VolumeOffIcon from '@material-ui/icons/VolumeOff';
 import {WordPack} from "../GameFrameComponent/helpArray";
+import {saveGameSettings} from "../../services/gameSettings";
 
 
 interface SettingGameProps {
@@ -24,6 +25,7 @@ interface SettingGameProps {
         teams: any[],
         categories: any[],
         wordPack?: WordPack,
+        customPackId?: string,
         wordsToFinish: number
         showingFrame: string | undefined,
     }
@@ -39,6 +41,7 @@ interface SettingGameState {
     teams: any[],
     categories: any[],
     wordPack: WordPack,
+    customPackId: string,
     wordsToFinish: number
     modalSettingsIsOpen: boolean
     showingFrame: string | undefined,
@@ -56,6 +59,7 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
             teams: this.props.settings.teams,
             categories: this.props.settings.categories,
             wordPack: this.props.settings.wordPack || 'classic',
+            customPackId: this.props.settings.customPackId || '',
             wordsToFinish: this.props.settings.wordsToFinish,
             modalSettingsIsOpen: false
         }
@@ -65,48 +69,54 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
 
     playSound = playSound
 
-    componentDidMount() {
+    persist = (patch?: Partial<SettingGameState>) => {
+        const next = { ...this.state, ...patch }
+        saveGameSettings({
+            time: next.time,
+            hardLevel: next.hardLevel,
+            teams: next.teams,
+            categories: next.categories,
+            wordPack: next.wordPack,
+            customPackId: next.customPackId,
+            wordsToFinish: next.wordsToFinish,
+        })
     }
 
     start = () => {
+        this.persist()
         this.props.onStartGame(this.state)
-    }
-
-    componentDidUpdate(prevProps: Readonly<SettingGameProps>, prevState: Readonly<SettingGameState>, snapshot?: any) {
-
     }
 
     addTeam = () => {
         this.playSound('click');
         if (this.state.teams.length < 10) {
-            const array = new Array()
-            this.state.teams.map(el => array.push(el))
-            array.push({name: "Player " + (array.length + 1)})
-            this.setState({teams: array})
+            const teams = this.state.teams.map((el) => ({ ...el }))
+            teams.push({name: "Player " + (teams.length + 1)})
+            this.setState({teams}, () => this.persist())
         }
     }
 
     openModalSettings = () => {
         this.setState({modalSettingsIsOpen:true})
     }
+
     closeModalSettings = (settings:any) => {
-        this.setState({modalSettingsIsOpen:false, ...settings})
+        this.setState({modalSettingsIsOpen:false, ...settings}, () => this.persist())
     }
 
     removeTeam = (i: number) => {
         this.playSound('click');
-        const array = new Array()
-        this.state.teams.map(el => array.push(el))
-        this.cleanStorage(array[i].name)
-        array.splice(i, 1)
-        this.setState({teams: array})
+        const teams = this.state.teams.map((el) => ({ ...el }))
+        this.cleanStorage(teams[i].name)
+        teams.splice(i, 1)
+        this.setState({teams}, () => this.persist())
     }
 
     changeNameOfTeam = (newName: any, i: number) => {
-        const array = new Array()
-        this.state.teams.map(el => array.push(el))
-        this.cleanStorage(array[i].name)
-        array[i].name = newName
+        const teams = this.state.teams.map((el) => ({ ...el }))
+        this.cleanStorage(teams[i].name)
+        teams[i] = { ...teams[i], name: String(newName) }
+        this.setState({teams}, () => this.persist())
     }
 
     cleanStorage(key: string) {
@@ -134,8 +144,14 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
                         </div>
                         <div className={'team-list'}>
                             {teams.map((el, i) => (
-                                <TeamListItemComponent name={el.name} index={i} delete={this.removeTeam} deleteAvailable={teams.length > 2}
-                                                       onChange={this.changeNameOfTeam}/>
+                                <TeamListItemComponent
+                                    key={`team-${i}`}
+                                    name={el.name}
+                                    index={i}
+                                    delete={this.removeTeam}
+                                    deleteAvailable={teams.length > 2}
+                                    onChange={this.changeNameOfTeam}
+                                />
                             ))}
                         </div>
                     </div>
@@ -182,7 +198,18 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
                         <h2>Start</h2>
                     </div>
                 </div>
-                <ModalSettingsComponent settings={this.props.settings} open={this.state.modalSettingsIsOpen} onFinishModalWindow={this.closeModalSettings}/>
+                <ModalSettingsComponent
+                    settings={{
+                        time: this.state.time,
+                        hardLevel: this.state.hardLevel,
+                        categories: this.state.categories,
+                        wordPack: this.state.wordPack,
+                        customPackId: this.state.customPackId,
+                        wordsToFinish: this.state.wordsToFinish,
+                    }}
+                    open={this.state.modalSettingsIsOpen}
+                    onFinishModalWindow={this.closeModalSettings}
+                />
             </>
 
 

@@ -19,8 +19,8 @@ const styles = (theme: Theme) =>
             margin: 0,
             padding: theme.spacing(4),
             background: 'transparent',
-            paddingBottom: theme.spacing(2)
-
+            paddingBottom: theme.spacing(2),
+            textAlign: 'center' as const,
         },
         closeButton: {
             position: 'absolute',
@@ -47,7 +47,8 @@ const DialogTitle = withStyles(styles)((props: DialogTitleProps) => {
 const DialogContent = withStyles((theme: Theme) => ({
     root: {
         padding: theme.spacing(2),
-        background: 'transparent'
+        background: 'transparent',
+        textAlign: 'center' as const,
     },
 }))(MuiDialogContent);
 
@@ -55,7 +56,8 @@ const DialogActions = withStyles((theme: Theme) => ({
     root: {
         margin: 0,
         padding: theme.spacing(2),
-        background: 'transparent'
+        background: 'transparent',
+        justifyContent: 'center',
     },
 }))(MuiDialogActions);
 
@@ -104,7 +106,12 @@ class ModalWindowComponent extends React.PureComponent <ModalWindowProps, ModalW
 
         return(
             <div>
-                <Dialog onClose={this.handleClose} aria-labelledby="customized-dialog-title" open={this.state.isOpen}>
+                <Dialog
+                    onClose={this.handleClose}
+                    aria-labelledby="customized-dialog-title"
+                    open={this.state.isOpen}
+                    PaperProps={{ className: 'winner-modal-paper' }}
+                >
                     <DialogTitle id='modal-title-id' children={this.props.title}></DialogTitle>
                     <DialogContent dividers>
                         <Typography gutterBottom variant="h3">

@@ -36,7 +36,9 @@ class RulesComponent extends React.PureComponent<RulesProps> {
               playing until one team leads.
             </li>
             <li>
-              Choose pack in settings: <em>Classic</em> (by difficulty) or <em>Expat DE</em> (categories).
+              Choose pack in settings: <em>Classic</em> (Easy / Normal / Hard),
+              <em> Expat DE</em> (categories), or create <em>My packs</em> with a no-ads subscription.
+              Use <em>View words</em> to preview a pack.
             </li>
           </ol>
         </div>

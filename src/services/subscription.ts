@@ -27,12 +27,42 @@ export function hasNoAdsSubscription(): boolean {
   return new Date(e.expiresAt).getTime() > Date.now()
 }
 
+/**
+ * Premium word features (custom packs today; may later include unlocked IAP packs).
+ * Currently same gate as no-ads subscription — split later if pack SKUs diverge.
+ */
+export function hasPremiumWordFeatures(): boolean {
+  return hasNoAdsSubscription()
+}
+
 export function setNoAdsEntitlement(entitlement: NoAdsEntitlement) {
   localStorage.setItem(ENTITLEMENT_KEY, JSON.stringify(entitlement))
 }
 
 export function clearNoAdsEntitlement() {
   localStorage.removeItem(ENTITLEMENT_KEY)
+}
+
+const OFFER_SHOWN_AT_KEY = 'alias.noAds.offerShownAt'
+const OFFER_COOLDOWN_MS = 60 * 60 * 1000 // 1 hour
+
+/** True if the discounted no-ads offer may be shown (not subscribed, cooldown elapsed). */
+export function canShowNoAdsOffer(): boolean {
+  if (hasNoAdsSubscription()) return false
+  try {
+    const raw = localStorage.getItem(OFFER_SHOWN_AT_KEY)
+    if (!raw) return true
+    const shownAt = Number(raw)
+    if (!Number.isFinite(shownAt)) return true
+    return Date.now() - shownAt >= OFFER_COOLDOWN_MS
+  } catch {
+    return true
+  }
+}
+
+/** Call when the offer is presented (or dismissed) so it won't spam for an hour. */
+export function markNoAdsOfferShown() {
+  localStorage.setItem(OFFER_SHOWN_AT_KEY, String(Date.now()))
 }
 
 /**

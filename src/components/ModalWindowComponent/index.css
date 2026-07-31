@@ -1,24 +1,47 @@
-.MuiDialogTitle-root p {
-    color: var(--text-primary)!important;
-    margin: 0;
-}
-.MuiDialogContent-root h3 {
-    color: var(--text-primary)!important;
-    margin: 0;
-}
-
-.MuiDialogContent-dividers{
-    border: unset !important;
-}
-
-.MuiDialog-paper{
+.winner-modal-paper {
     border-radius: var(--radius-lg) !important;
     background: rgba(17, 24, 39, 0.92) !important;
     border: 1px solid var(--border-1) !important;
     box-shadow: var(--shadow-2) !important;
+    text-align: center;
 }
 
-.MuiDialogActions-root button{
+.winner-modal-paper .MuiDialogTitle-root {
+    text-align: center !important;
+}
+
+.winner-modal-paper .MuiDialogTitle-root p,
+.winner-modal-paper .MuiTypography-root {
+    color: var(--text-primary) !important;
+    margin: 0;
+    text-align: center;
+    width: 100%;
+}
+
+.winner-modal-paper .MuiDialogContent-root {
+    text-align: center !important;
+}
+
+.winner-modal-paper .MuiDialogContent-root h3 {
+    color: var(--text-primary) !important;
+    margin: 0;
+    text-align: center;
+    width: 100%;
+}
+
+.winner-modal-paper .MuiDialogContent-dividers {
+    border: unset !important;
+}
+
+.winner-modal-paper .MuiDialogActions-root {
+    justify-content: center !important;
+    align-items: center !important;
+    display: flex !important;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.winner-modal-paper .MuiDialogActions-root button {
     background: linear-gradient(180deg, rgba(99, 102, 241, 0.95), rgba(79, 70, 229, 0.92));
     width: 100%;
     min-height: var(--btn-min-h);
@@ -33,7 +56,5 @@
     font-size: clamp(1rem, 3.5vw, 1.35rem) !important;
     line-height: 1.25 !important;
     color: rgba(255, 255, 255, 0.96) !important;
-}
-.MuiDialogActions-root{
-    justify-content: center !important;
+    margin: 0 auto !important;
 }

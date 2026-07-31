@@ -49,7 +49,12 @@ class NoAdsModalComponent extends React.PureComponent<NoAdsModalProps, NoAdsModa
   render() {
     const copy = getSubscriptionOfferCopy()
     return (
-      <Dialog open={!!this.props.open} onClose={this.props.onClose} aria-labelledby="no-ads-title">
+      <Dialog
+        open={!!this.props.open}
+        onClose={this.props.onClose}
+        aria-labelledby="no-ads-title"
+        PaperProps={{ className: 'no-ads-modal-paper' }}
+      >
         <div className="no-ads-modal">
           <h2 id="no-ads-title" className="no-ads-modal__title">
             {copy.title}
