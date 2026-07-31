@@ -54,7 +54,9 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Install npm deps
-        run: npm ci
+        run: |
+          # Prefer clean install; fall back if lockfile/npm version drift on the runner
+          npm ci --legacy-peer-deps || npm install --legacy-peer-deps --no-fund --no-audit
 
       - name: Decode keystore
         env:
