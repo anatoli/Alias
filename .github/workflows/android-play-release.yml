@@ -56,50 +56,72 @@ jobs:
 
       - name: Prepare Cordova project skeleton
         run: |
-          # Cordova expects www/ to exist before platform add
           mkdir -p www
           if [ ! -f www/index.html ]; then
             printf '%s\n' '<!doctype html><html><body>Alias</body></html>' > www/index.html
           fi
           test -f config.xml
-          # Validate XML declaration (must be 1.0, app version is on <widget>)
           head -n 1 config.xml
 
       - name: Add Android platform
         run: |
-          # platforms/ is gitignored — always add fresh on CI
           rm -rf platforms/android plugins/android.json
           npx cordova platform add android
 
-      - name: Decode keystore + signing properties
+      - name: Decode keystore + write build.json
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$HOME/alias-upload.jks"
-          cat > release-signing.properties <<EOF
-          storeFile=$HOME/alias-upload.jks
-          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
-          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
-          EOF
-          cp release-signing.properties platforms/android/release-signing.properties
-          echo "cdvReleaseSigningPropertiesFile=release-signing.properties" >> platforms/android/gradle.properties
+          set -euo pipefail
+          KEYSTORE_PATH="$HOME/alias-upload.jks"
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$KEYSTORE_PATH"
+          test -s "$KEYSTORE_PATH"
+          # List aliases to fail fast if keystore/password wrong
+          keytool -list -keystore "$KEYSTORE_PATH" -storepass "$ANDROID_KEYSTORE_PASSWORD" | head -n 20
 
-      - name: Build release AAB
+          # Cordova signing via build.json (avoid fragile release-signing.properties)
+          python3 - <<'PY'
+          import json, os
+          cfg = {
+            "android": {
+              "release": {
+                "keystore": os.path.expanduser("~/alias-upload.jks"),
+                "storePassword": os.environ["ANDROID_KEYSTORE_PASSWORD"],
+                "alias": os.environ["ANDROID_KEY_ALIAS"],
+                "password": os.environ["ANDROID_KEY_PASSWORD"],
+                "keystoreType": "jks",
+                "packageType": "bundle"
+              }
+            }
+          }
+          with open("build.json", "w", encoding="utf-8") as f:
+            json.dump(cfg, f, indent=2)
+          print("Wrote build.json")
+          PY
+
+      - name: Build signed release AAB
         env:
           REACT_APP_WORDS_URL: ${{ vars.REACT_APP_WORDS_URL }}
           REACT_APP_ADMOB_INTERSTITIAL_ID: ${{ vars.REACT_APP_ADMOB_INTERSTITIAL_ID }}
           REACT_APP_SUBSCRIPTION_PRODUCT_ID: ${{ vars.REACT_APP_SUBSCRIPTION_PRODUCT_ID }}
         run: |
-          npx cordova build android --release -- --packageType=bundle
+          set -euo pipefail
+          npx cordova build android --release --buildConfig=build.json -- --packageType=bundle
 
-      - name: Find AAB
+      - name: Find and verify AAB signature
         id: aab
         run: |
+          set -euo pipefail
           AAB=$(find platforms/android -name "*.aab" | head -n 1)
           echo "path=$AAB" >> "$GITHUB_OUTPUT"
           test -n "$AAB"
           ls -la "$AAB"
+          # Fail if unsigned
+          jarsigner -verify -verbose -certs "$AAB" | tee /tmp/aab-verify.txt
+          grep -q "jar verified" /tmp/aab-verify.txt
 
       - name: Upload to Google Play
         uses: r0adkll/upload-google-play@v1
@@ -108,4 +130,4 @@ jobs:
           packageName: com.AAA.Alias
           releaseFiles: ${{ steps.aab.outputs.path }}
           track: ${{ github.event.inputs.track || 'internal' }}
-          status: completed
+          status: draft
