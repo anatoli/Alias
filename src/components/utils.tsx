@@ -12,9 +12,11 @@ import tick from "../res/audio/tick.mp3"
 type SoundEvent = 'click' | 'error' | 'confirm' | 'victory' | 'tick'
 
 const SOUND_KEY = 'sound-effect'
+const SOUND_EVENTS: SoundEvent[] = ['click', 'error', 'confirm', 'victory', 'tick']
 
 let audioUnlocked = false
 let unlockListenerAttached = false
+let soundsWarmed = false
 
 const audioCache: Partial<Record<SoundEvent, HTMLAudioElement>> = {}
 const lastPlayedAt: Partial<Record<SoundEvent, number>> = {}
@@ -35,6 +37,60 @@ function soundEnabled(): boolean {
         return true
     }
     return raw === 'true'
+}
+
+function getOrCreateAudio(event: SoundEvent): HTMLAudioElement | null {
+    const sound_src = soundSrcMap[event]
+    if (!sound_src) return null
+
+    let audio = audioCache[event]
+    if (!audio) {
+        audio = new Audio(sound_src)
+        audio.preload = 'auto'
+        audioCache[event] = audio
+    } else if (audio.src !== sound_src) {
+        audio.src = sound_src
+    }
+    return audio
+}
+
+/**
+ * After first user gesture: create players, load buffers, and silently prime play().
+ * Cuts first-play latency on Android WebView / mobile browsers.
+ */
+async function warmupSounds() {
+    if (soundsWarmed) return
+    soundsWarmed = true
+
+    await Promise.all(
+        SOUND_EVENTS.map(async (event) => {
+            const audio = getOrCreateAudio(event)
+            if (!audio) return
+            try {
+                audio.load()
+            } catch {
+                // ignore
+            }
+            try {
+                const prevVol = audio.volume
+                audio.volume = 0
+                const p = audio.play()
+                if (p && typeof (p as any).then === 'function') {
+                    await p
+                }
+                audio.pause()
+                audio.currentTime = 0
+                audio.volume = prevVol > 0 ? prevVol : 1
+            } catch {
+                try {
+                    audio.volume = 1
+                    audio.currentTime = 0
+                } catch {
+                    // ignore
+                }
+            }
+        })
+    )
 }
 
 function attachUnlockOnce() {
@@ -63,6 +119,12 @@ function attachUnlockOnce() {
             }
         } catch {
             // ignore
+        }
+
+        try {
+            await warmupSounds()
+        } catch {
+            // ignore
         } finally {
             window.removeEventListener('pointerdown', unlock)
             window.removeEventListener('touchend', unlock)
@@ -80,8 +142,7 @@ export const playSound = (event:string) =>{
     if (!soundEnabled()) return
 
     const e = event as SoundEvent
-    const sound_src = soundSrcMap[e]
-    if (!sound_src) return
+    if (!soundSrcMap[e]) return
 
     const now = Date.now()
     // Prevent rapid double-fire (e.g., click handler bubbling / repeated renders)
@@ -91,15 +152,8 @@ export const playSound = (event:string) =>{
     lastPlayedAt[e] = now
 
     // Reuse one Audio element per sound to avoid piling up <audio> nodes and echo/pings.
-    // For tick we *never* overlap (restart or skip). For other sounds we restart if still playing.
-    let audio = audioCache[e]
-    if (!audio) {
-        audio = new Audio(sound_src)
-        audio.preload = 'auto'
-        audioCache[e] = audio
-    } else if (audio.src !== sound_src) {
-        audio.src = sound_src
-    }
+    const audio = getOrCreateAudio(e)
+    if (!audio) return
 
     try {
         // Avoid overlap / echo. Restart from beginning.

@@ -1,7 +1,7 @@
 {
   "name": "alias-bitte",
   "displayName": "Alias, bitte",
-  "version": "1.4.7",
+  "version": "1.4.8",
   "description": "Alias party game for friends and expats",
   "main": "index.js",
   "scripts": {
