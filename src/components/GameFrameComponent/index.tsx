@@ -3,25 +3,15 @@ import '../../App.css';
 import '../BodyComponent.css';
 
 import './index.css'
-import TeamListItemComponent from "../TeamListItemComponent";
 import ProgressBarComponent from "../ProgressBarComponent";
 
 import {playSound} from "../utils";
 
-import {EXPAT_DECK} from "./helpArray";
+import {getDeckCollectionFromStorage} from "../../decks/deckStorage";
+import {ExpatCategory, GameLanguage} from "../../decks/types";
+import {buildDeckKey, drawNextCard, DeckCard} from "./sessionCardDeck";
 
-type ExpatCategory =
-    | 'Bureaucracy'
-    | 'Work'
-    | 'German Language'
-    | 'Transport'
-    | 'Social Life'
-    | 'Stereotypes'
-    | 'Expat Life'
-    | 'Cringe Situations'
-    | 'IT / Tech'
-    | 'Absurd / Meme'
-
+type HardLevel = 'EASY' | 'NORMAL' | 'HARD'
 
 
 interface GameFrameProps {
@@ -32,6 +22,7 @@ interface GameFrameProps {
         hardLevel: any,
         teams: any,
         categories?: ExpatCategory[],
+        language?: GameLanguage,
         wordsToFinish: any
     }
 }
@@ -39,15 +30,12 @@ interface GameFrameProps {
 interface GameFrameState {
     timer: any
     progress: number,
-    deck: Array<{ category: ExpatCategory, text: string }>,
     gameProcess:{
         team: any;
         listWords:{};
     },
     currentWord: string
     currentCategory?: ExpatCategory
-
-
 }
 
 class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameState> {
@@ -59,13 +47,12 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
         this.state = {
             timer: this.props.settings.time,
             progress: 100,
-            deck: this.buildDeck(this.props.settings.categories),
             gameProcess:{
                 team: localStorage.getItem('currentTeam'),
                 listWords:{}
             },
             currentWord: '',
-            currentCategory: undefined
+            currentCategory: undefined,
         }
     }
 
@@ -91,21 +78,6 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
 
     timeIsDone =(isPause?:boolean)=>{
 
-    }
-
-    getRandomInt(min:number, max:number) {
-        min = Math.ceil(min);
-        max = Math.floor(max);
-        return Math.floor(Math.random() * (max - min) + min); // The maximum is exclusive and the minimum is inclusive
-    }
-
-    buildDeck = (selected?: ExpatCategory[]) => {
-        const categories = (selected && selected.length > 0 ? selected : (Object.keys(EXPAT_DECK) as ExpatCategory[]))
-        const deck: Array<{ category: ExpatCategory, text: string }> = []
-        categories.forEach((cat) => {
-            EXPAT_DECK[cat].forEach((text) => deck.push({ category: cat, text }))
-        })
-        return deck
     }
 
     startTimer = () =>{
@@ -137,15 +109,44 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
 
     // @ts-ignore
     getNewCard = async() => {
-        const {deck} = this.state
-        if (!deck || deck.length < 1) {
-            const fallback = this.buildDeck()
-            const idx = this.getRandomInt(0, fallback.length)
-            return fallback[idx]
+        const lang: GameLanguage = this.props.settings.language || 'ru'
+        const categories: ExpatCategory[] = (this.props.settings.categories && this.props.settings.categories.length > 0)
+            ? this.props.settings.categories
+            : [
+                'Bureaucracy',
+                'Work',
+                'German Language',
+                'Transport',
+                'Social Life',
+                'Stereotypes',
+                'Expat Life',
+                'Cringe Situations',
+                'IT / Tech',
+                'Absurd / Meme',
+            ]
+
+        const collection = getDeckCollectionFromStorage()
+        const langDeck =
+            collection &&
+            // @ts-ignore
+            (collection as any).languages &&
+            // @ts-ignore
+            (collection as any).languages[lang]
+        const cards: DeckCard[] = []
+        if (langDeck) {
+            categories.forEach((cat) => {
+                const words: string[] = langDeck[cat] || []
+                words.forEach((text: string) => cards.push({category: cat, text: text}))
+            })
         }
 
-        const randomIndex = this.getRandomInt(0, deck.length)
-        return deck[randomIndex]
+        // Fallback (should be rare): show something even if storage is empty
+        if (cards.length < 1) {
+            cards.push({category: 'Expat Life', text: lang === 'de' ? 'Heimweh' : (lang === 'en' ? 'homesickness' : 'тоска по дому')})
+        }
+
+        const key = buildDeckKey(lang, categories)
+        return drawNextCard(key, cards)
     }
 
     setAnswerWord = async (argument:boolean) => {

@@ -18,6 +18,7 @@ interface SettingGameProps {
         hardLevel: string,
         teams: any[],
         categories: any[],
+        language: 'ru' | 'en' | 'de',
         wordsToFinish: number
         showingFrame: string | undefined,
     }
@@ -28,6 +29,7 @@ interface SettingGameState {
     hardLevel: string,
     teams: any[],
     categories: any[],
+    language: 'ru' | 'en' | 'de',
     wordsToFinish: number
     modalSettingsIsOpen: boolean
     showingFrame: string | undefined,
@@ -44,6 +46,7 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
             hardLevel: this.props.settings.hardLevel,
             teams: this.props.settings.teams,
             categories: this.props.settings.categories,
+            language: this.props.settings.language,
             wordsToFinish: this.props.settings.wordsToFinish,
             modalSettingsIsOpen: false
         }

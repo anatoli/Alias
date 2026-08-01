@@ -26,6 +26,7 @@ interface ModalSettingsProps {
         time: number,
         hardLevel: string,
         categories?: ExpatCategory[],
+        language?: 'ru' | 'en' | 'de',
         wordsToFinish: number
     }
 }
@@ -35,6 +36,7 @@ interface ModalSettingsState {
     time: number,
     hardLevel: string,
     categories: ExpatCategory[],
+    language: 'ru' | 'en' | 'de',
     wordsToFinish: number
 }
 
@@ -60,6 +62,7 @@ class ModalSettingsComponent extends React.PureComponent <ModalSettingsProps, Mo
                     'IT / Tech',
                     'Absurd / Meme',
                 ]),
+            language: this.props.settings.language || 'ru',
             wordsToFinish: this.props.settings.wordsToFinish
         }
     }
@@ -81,6 +84,7 @@ class ModalSettingsComponent extends React.PureComponent <ModalSettingsProps, Mo
             time:this.state.time,
             hardLevel:this.state.hardLevel,
             categories: this.state.categories,
+            language: this.state.language,
             wordsToFinish:this.state.wordsToFinish,
         })
     };
@@ -110,6 +114,11 @@ class ModalSettingsComponent extends React.PureComponent <ModalSettingsProps, Mo
             const next = Array.from(set)
             return { ...prev, categories: next.length > 0 ? next : prev.categories }
         })
+    }
+
+    changeLanguage = (lang: 'ru' | 'en' | 'de') => {
+        this.playSound('click')
+        this.setState({language: lang})
     }
 
     render() {
@@ -172,6 +181,20 @@ class ModalSettingsComponent extends React.PureComponent <ModalSettingsProps, Mo
                                         onClick={(node) => this.changeWordsToFinish(90)}>90</h2>
                                 </div>
 
+                            </div>
+
+                            <div className={'settings-block'}>
+                                <div className={'title-block'}>
+                                    <h2 className='title'>Language</h2>
+                                </div>
+                                <div className={'info-block'}>
+                                    <h2 className={`${this.state.language === 'ru' ? 'active' : ''}`}
+                                        onClick={() => this.changeLanguage('ru')}>RU</h2>
+                                    <h2 className={`${this.state.language === 'en' ? 'active' : ''}`}
+                                        onClick={() => this.changeLanguage('en')}>EN</h2>
+                                    <h2 className={`${this.state.language === 'de' ? 'active' : ''}`}
+                                        onClick={() => this.changeLanguage('de')}>DE</h2>
+                                </div>
                             </div>
 
                             <div className={'settings-block'}>
