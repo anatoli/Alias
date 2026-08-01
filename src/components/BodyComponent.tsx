@@ -10,6 +10,8 @@ import CurrentGameResultComponent from "./CurrentGameResultComponent";
 import {playSound} from "./utils";
 import ButtonComponent from "./ButtonComponent";
 import {resetSessionWordDeck} from "./GameFrameComponent/sessionWordDeck";
+import {resetSessionCardDeck} from "./GameFrameComponent/sessionCardDeck";
+import {ensureDeckCollectionInStorage} from "../decks/deckStorage";
 
 type ExpatCategory =
     | 'Bureaucracy'
@@ -51,6 +53,7 @@ interface BodyComponentState {
         hardLevel: string,
         teams: any[],
         categories: ExpatCategory[],
+        language: 'ru' | 'en' | 'de',
         wordsToFinish: 30
     }
 
@@ -83,6 +86,7 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
                     'IT / Tech',
                     'Absurd / Meme',
                 ],
+                language: 'ru',
                 wordsToFinish: 30
             }
         }
@@ -91,6 +95,13 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
     playSound = playSound
 
     componentDidMount() {
+        // Generate / load multi-language categorized decks once per install.
+        // Stored locally so it can later be exported and sent via API.
+        try {
+            ensureDeckCollectionInStorage()
+        } catch {
+            // ignore; game will fall back to built-in words if storage is unavailable
+        }
         // initialize persisted toggles with safe defaults
         if (localStorage.getItem('sound-effect') === null) {
             localStorage.setItem('sound-effect', 'true')
@@ -124,6 +135,7 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
     beforeStartGame = (stateSettings:any) => {
         // New game => reshuffle words for this app run
         resetSessionWordDeck()
+        resetSessionCardDeck()
         this.setState({stateSettings:stateSettings})
         this.setType('Start')
     }
@@ -196,6 +208,7 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
     restart = () => {
         // Full restart => clear persisted state and reset word deck
         resetSessionWordDeck()
+        resetSessionCardDeck()
         localStorage.removeItem('teamsActiveList')
         localStorage.removeItem('currentTeam')
         localStorage.removeItem('results')
