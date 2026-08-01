@@ -9,6 +9,7 @@ import ListWordsComponent from "./ListWordsComponent";
 import CurrentGameResultComponent from "./CurrentGameResultComponent";
 import {playSound} from "./utils";
 import ButtonComponent from "./ButtonComponent";
+import {resetSessionWordDeck} from "./GameFrameComponent/sessionWordDeck";
 
 type ExpatCategory =
     | 'Bureaucracy'
@@ -121,6 +122,8 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
     }
 
     beforeStartGame = (stateSettings:any) => {
+        // New game => reshuffle words for this app run
+        resetSessionWordDeck()
         this.setState({stateSettings:stateSettings})
         this.setType('Start')
     }
@@ -191,6 +194,8 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
     }
 
     restart = () => {
+        // Full restart => clear persisted state and reset word deck
+        resetSessionWordDeck()
         localStorage.removeItem('teamsActiveList')
         localStorage.removeItem('currentTeam')
         localStorage.removeItem('results')

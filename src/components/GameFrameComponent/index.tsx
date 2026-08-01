@@ -3,25 +3,14 @@ import '../../App.css';
 import '../BodyComponent.css';
 
 import './index.css'
-import TeamListItemComponent from "../TeamListItemComponent";
 import ProgressBarComponent from "../ProgressBarComponent";
 
 import {playSound} from "../utils";
 
-import {EXPAT_DECK} from "./helpArray";
+import {WORDS} from "./helpArray";
+import {drawNextWord} from "./sessionWordDeck";
 
-type ExpatCategory =
-    | 'Bureaucracy'
-    | 'Work'
-    | 'German Language'
-    | 'Transport'
-    | 'Social Life'
-    | 'Stereotypes'
-    | 'Expat Life'
-    | 'Cringe Situations'
-    | 'IT / Tech'
-    | 'Absurd / Meme'
-
+type HardLevel = 'EASY' | 'NORMAL' | 'HARD'
 
 
 interface GameFrameProps {
@@ -31,7 +20,7 @@ interface GameFrameProps {
         time: any,
         hardLevel: any,
         teams: any,
-        categories?: ExpatCategory[],
+        categories?: any[],
         wordsToFinish: any
     }
 }
@@ -39,15 +28,11 @@ interface GameFrameProps {
 interface GameFrameState {
     timer: any
     progress: number,
-    deck: Array<{ category: ExpatCategory, text: string }>,
     gameProcess:{
         team: any;
         listWords:{};
     },
     currentWord: string
-    currentCategory?: ExpatCategory
-
-
 }
 
 class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameState> {
@@ -59,13 +44,11 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
         this.state = {
             timer: this.props.settings.time,
             progress: 100,
-            deck: this.buildDeck(this.props.settings.categories),
             gameProcess:{
                 team: localStorage.getItem('currentTeam'),
                 listWords:{}
             },
             currentWord: '',
-            currentCategory: undefined
         }
     }
 
@@ -73,8 +56,8 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
 
    async componentDidMount() {
         this.startTimer()
-        const next = await this.getNewCard()
-        this.setState({currentWord: next.text, currentCategory: next.category})
+        const next = await this.getNewWord()
+        this.setState({currentWord: next})
     }
 
     componentWillUnmount() {
@@ -91,21 +74,6 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
 
     timeIsDone =(isPause?:boolean)=>{
 
-    }
-
-    getRandomInt(min:number, max:number) {
-        min = Math.ceil(min);
-        max = Math.floor(max);
-        return Math.floor(Math.random() * (max - min) + min); // The maximum is exclusive and the minimum is inclusive
-    }
-
-    buildDeck = (selected?: ExpatCategory[]) => {
-        const categories = (selected && selected.length > 0 ? selected : (Object.keys(EXPAT_DECK) as ExpatCategory[]))
-        const deck: Array<{ category: ExpatCategory, text: string }> = []
-        categories.forEach((cat) => {
-            EXPAT_DECK[cat].forEach((text) => deck.push({ category: cat, text }))
-        })
-        return deck
     }
 
     startTimer = () =>{
@@ -136,35 +104,28 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
     }
 
     // @ts-ignore
-    getNewCard = async() => {
-        const {deck} = this.state
-        if (!deck || deck.length < 1) {
-            const fallback = this.buildDeck()
-            const idx = this.getRandomInt(0, fallback.length)
-            return fallback[idx]
-        }
-
-        const randomIndex = this.getRandomInt(0, deck.length)
-        return deck[randomIndex]
+    getNewWord = async() => {
+        const hardLevel: HardLevel = this.props.settings.hardLevel || 'NORMAL'
+        const source = (WORDS as any)[hardLevel] || (WORDS as any).NORMAL || []
+        return drawNextWord(hardLevel, source)
     }
 
     setAnswerWord = async (argument:boolean) => {
         let obj:any = this.state.gameProcess.listWords
-        const label = this.state.currentCategory ? `[${this.state.currentCategory}] ${this.state.currentWord}` : this.state.currentWord
-        obj[label] = argument
+        obj[this.state.currentWord] = argument
 
         this.playSound(argument ? 'confirm' : 'error')
         let gameProcess = {
             team: this.state.gameProcess.team,
             listWords: obj
         }
-        const next = await this.getNewCard()
-        this.setState({gameProcess: gameProcess, currentWord: next.text, currentCategory: next.category})
+        const next = await this.getNewWord()
+        this.setState({gameProcess: gameProcess, currentWord: next})
         // finishing is handled by the timer tick; avoid double-calling here
     }
 
     render() {
-        const {currentWord, currentCategory} = this.state
+        const {currentWord} = this.state
         return(
             <div>
                 <div className={'timer'}>
@@ -173,7 +134,6 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
                 </div>
                 <div className={'words'}>
                     <div>
-                        {currentCategory && <div className={'word-category'}>{currentCategory}</div>}
                         <p>{currentWord}</p>
                     </div>
                 </div>
