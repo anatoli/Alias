@@ -1,0 +1,37 @@
+name: CI Build
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - "cursor/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (CRA)
+        run: npm run cra:build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: build/
+          if-no-files-found: error
+
