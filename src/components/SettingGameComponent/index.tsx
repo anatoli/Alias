@@ -14,6 +14,7 @@ import MusicOffIcon from '@material-ui/icons/MusicOff';
 import VolumeUpIcon from '@material-ui/icons/VolumeUp';
 import VolumeOffIcon from '@material-ui/icons/VolumeOff';
 import {WordPack} from "../GameFrameComponent/helpArray";
+import {GameLanguage} from "../../decks/types";
 import {saveGameSettings} from "../../services/gameSettings";
 import {t} from "../../i18n";
 
@@ -27,6 +28,7 @@ interface SettingGameProps {
         categories: any[],
         wordPack?: WordPack,
         customPackId?: string,
+        language?: GameLanguage,
         wordsToFinish: number
         showingFrame: string | undefined,
     }
@@ -43,6 +45,7 @@ interface SettingGameState {
     categories: any[],
     wordPack: WordPack,
     customPackId: string,
+    language: GameLanguage,
     wordsToFinish: number
     modalSettingsIsOpen: boolean
     showingFrame: string | undefined,
@@ -63,6 +66,7 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
             categories: this.props.settings.categories,
             wordPack: this.props.settings.wordPack || 'classic',
             customPackId: this.props.settings.customPackId || '',
+            language: this.props.settings.language || 'ru',
             wordsToFinish: this.props.settings.wordsToFinish,
             modalSettingsIsOpen: false
         }
@@ -89,6 +93,7 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
             categories: next.categories,
             wordPack: next.wordPack,
             customPackId: next.customPackId,
+            language: next.language,
             wordsToFinish: next.wordsToFinish,
         })
     }
@@ -228,6 +233,7 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
                         categories: this.state.categories,
                         wordPack: this.state.wordPack,
                         customPackId: this.state.customPackId,
+                        language: this.state.language,
                         wordsToFinish: this.state.wordsToFinish,
                     }}
                     open={this.state.modalSettingsIsOpen}

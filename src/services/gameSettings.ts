@@ -1,4 +1,5 @@
 import { ExpatCategory, WordPack } from '../components/GameFrameComponent/helpArray'
+import { GameLanguage } from '../decks/types'
 
 const STORAGE_KEY = 'alias.gameSettings.v1'
 
@@ -9,6 +10,7 @@ export type PersistedGameSettings = {
   categories: ExpatCategory[]
   wordPack: WordPack
   customPackId: string
+  language: GameLanguage
   wordsToFinish: number
 }
 
@@ -32,6 +34,7 @@ export function defaultGameSettings(): PersistedGameSettings {
     hardLevel: 'NORMAL',
     wordPack: 'classic',
     customPackId: '',
+    language: 'ru',
     teams: [{ name: 'Player 1' }, { name: 'Player 2' }],
     categories: DEFAULT_CATEGORIES.slice(),
     wordsToFinish: 30,
@@ -51,6 +54,11 @@ function normalizeTeams(raw: unknown): { name: string }[] {
 function normalizeWordPack(raw: unknown): WordPack {
   if (raw === 'expat' || raw === 'custom' || raw === 'classic') return raw
   return 'classic'
+}
+
+function normalizeLanguage(raw: unknown): GameLanguage {
+  if (raw === 'en' || raw === 'de' || raw === 'ru') return raw
+  return 'ru'
 }
 
 function normalizeCategories(raw: unknown): ExpatCategory[] {
@@ -83,6 +91,7 @@ export function loadGameSettings(): PersistedGameSettings {
       categories: normalizeCategories(parsed.categories),
       wordPack: normalizeWordPack(parsed.wordPack),
       customPackId: String(parsed.customPackId || ''),
+      language: normalizeLanguage(parsed.language),
       wordsToFinish:
         wordsToFinish === 30 || wordsToFinish === 60 || wordsToFinish === 90
           ? wordsToFinish
@@ -111,6 +120,9 @@ export function saveGameSettings(settings: Partial<PersistedGameSettings> & {
       settings.customPackId !== undefined
         ? String(settings.customPackId || '')
         : current.customPackId,
+    language: settings.language
+      ? normalizeLanguage(settings.language)
+      : current.language,
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
   return next

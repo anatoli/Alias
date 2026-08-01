@@ -55,6 +55,7 @@ const en: Messages = {
   'settings.normal': 'Normal',
   'settings.hard': 'Hard',
   'settings.targetScore': 'Target score',
+  'settings.wordLanguage': 'Word language',
   'settings.categories': 'Categories',
 
   'pack.classic.title': 'Classic',

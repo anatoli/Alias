@@ -17,6 +17,9 @@ import {EXPAT_DECK, HardLevel, ExpatCategory, WordPack} from "./helpArray";
 import {getWordsForLevel} from "../../services/wordSync";
 import {getCustomPack} from "../../services/customPacks";
 import {t, categoryLabel} from "../../i18n";
+import {getDeckCollectionFromStorage} from "../../decks/deckStorage";
+import {GameLanguage} from "../../decks/types";
+import {resetSessionCardDeck} from "./sessionCardDeck";
 
 type Card = { category?: ExpatCategory, text: string }
 
@@ -33,6 +36,7 @@ interface GameFrameProps {
         categories?: ExpatCategory[],
         wordPack?: WordPack,
         customPackId?: string,
+        language?: GameLanguage,
         wordsToFinish: any
     }
 }
@@ -55,10 +59,21 @@ interface GameFrameState {
     exitConfirmOpen: boolean
 }
 
+function randomInt(maxExclusive: number) {
+    if (maxExclusive <= 0) return 0
+    const cryptoObj: any = (typeof window !== 'undefined' ? (window as any).crypto : undefined)
+    if (cryptoObj && typeof cryptoObj.getRandomValues === 'function') {
+        const buf = new Uint32Array(1)
+        cryptoObj.getRandomValues(buf)
+        return buf[0] % maxExclusive
+    }
+    return Math.floor(Math.random() * maxExclusive)
+}
+
 function shuffle<T>(arr: T[]): T[] {
     const a = arr.slice()
     for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1))
+        const j = randomInt(i + 1)
         const t = a[i]
         a[i] = a[j]
         a[j] = t
@@ -70,6 +85,7 @@ function shuffle<T>(arr: T[]): T[] {
 export function resetSessionDeck() {
     localStorage.removeItem(SESSION_DECK_KEY)
     localStorage.removeItem(SESSION_PACK_KEY)
+    resetSessionCardDeck()
 }
 
 class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameState> {
@@ -106,7 +122,8 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
         const level = String(this.props.settings.hardLevel || 'NORMAL').toUpperCase()
         const cats = (this.props.settings.categories || []).slice().sort().join('|')
         const customId = this.props.settings.customPackId || ''
-        return `${pack}|${level}|${cats}|${customId}`
+        const language = this.props.settings.language || 'ru'
+        return `${pack}|${level}|${cats}|${customId}|${language}`
     }
 
     loadOrBuildDeck = (): Card[] => {
@@ -118,7 +135,7 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
                 const parsed = JSON.parse(raw)
                 if (Array.isArray(parsed) && parsed.length > 0) return parsed as Card[]
             }
-        } catch {
+        } catch (e) {
             // fall through
         }
         const fresh = shuffle(this.buildDeckSource())
@@ -141,10 +158,22 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
         if (pack === 'expat') {
             const selected = this.props.settings.categories
             const categories = (selected && selected.length > 0 ? selected : (Object.keys(EXPAT_DECK) as ExpatCategory[]))
+            const language: GameLanguage = this.props.settings.language || 'ru'
+            const collection = getDeckCollectionFromStorage()
+            const langDeck = collection && collection.languages && collection.languages[language]
             const deck: Card[] = []
-            categories.forEach((cat) => {
-                EXPAT_DECK[cat].forEach((text) => deck.push({ category: cat, text }))
-            })
+            if (langDeck) {
+                categories.forEach((cat) => {
+                    const words: string[] = (langDeck as any)[cat] || []
+                    words.forEach((text: string) => deck.push({ category: cat, text }))
+                })
+            }
+            // Fallback to built-in EXPAT_DECK if storage empty
+            if (deck.length < 1) {
+                categories.forEach((cat) => {
+                    EXPAT_DECK[cat].forEach((text) => deck.push({ category: cat, text }))
+                })
+            }
             return deck
         }
         const level = (String(this.props.settings.hardLevel || 'NORMAL').toUpperCase() as HardLevel)

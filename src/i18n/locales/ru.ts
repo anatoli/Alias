@@ -55,6 +55,7 @@ const ru: Messages = {
   'settings.normal': 'Средний',
   'settings.hard': 'Сложный',
   'settings.targetScore': 'Цель по очкам',
+  'settings.wordLanguage': 'Язык слов',
   'settings.categories': 'Категории',
 
   'pack.classic.title': 'Classic',

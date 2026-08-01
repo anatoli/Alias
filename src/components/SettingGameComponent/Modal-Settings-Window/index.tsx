@@ -8,6 +8,7 @@ import {playSound} from "../../utils";
 import SpeedIcon from '@material-ui/icons/Speed';
 import {ExpatCategory, WordPack} from "../../GameFrameComponent/helpArray";
 import {EXPAT_DECK} from "../../GameFrameComponent/helpArray";
+import {GameLanguage} from "../../../decks/types";
 import {getWordsForLevel} from "../../../services/wordSync";
 import {
     deleteCustomPack,
@@ -32,6 +33,7 @@ interface ModalSettingsProps {
         categories?: ExpatCategory[],
         wordPack?: WordPack,
         customPackId?: string,
+        language?: GameLanguage,
         wordsToFinish: number
     }
 }
@@ -43,6 +45,7 @@ interface ModalSettingsState {
     categories: ExpatCategory[],
     wordPack: WordPack,
     customPackId: string,
+    language: GameLanguage,
     wordsToFinish: number,
     previewOpen: boolean,
     customPacks: CustomWordPack[],
@@ -83,6 +86,7 @@ class ModalSettingsComponent extends React.PureComponent <ModalSettingsProps, Mo
             hardLevel: this.props.settings.hardLevel,
             wordPack: this.props.settings.wordPack || 'classic',
             customPackId: this.props.settings.customPackId || '',
+            language: this.props.settings.language || 'ru',
             categories: (this.props.settings.categories && this.props.settings.categories.length > 0
                 ? this.props.settings.categories
                 : ALL_CATEGORIES.slice()),
@@ -106,6 +110,7 @@ class ModalSettingsComponent extends React.PureComponent <ModalSettingsProps, Mo
                 hardLevel: this.props.settings.hardLevel,
                 wordPack: this.props.settings.wordPack || 'classic',
                 customPackId: this.props.settings.customPackId || '',
+                language: this.props.settings.language || 'ru',
                 categories: (this.props.settings.categories && this.props.settings.categories.length > 0
                     ? this.props.settings.categories
                     : ALL_CATEGORIES.slice()),
@@ -128,6 +133,7 @@ class ModalSettingsComponent extends React.PureComponent <ModalSettingsProps, Mo
             categories: this.state.categories,
             wordPack: this.state.wordPack,
             customPackId: this.state.customPackId,
+            language: this.state.language,
             wordsToFinish:this.state.wordsToFinish,
         })
     };
@@ -145,6 +151,11 @@ class ModalSettingsComponent extends React.PureComponent <ModalSettingsProps, Mo
     changeHardLevel(param: string) {
         this.playSound('click');
         this.setState({hardLevel: param})
+    }
+
+    changeLanguage(lang: GameLanguage) {
+        this.playSound('click');
+        this.setState({language: lang})
     }
 
     changePack(pack: WordPack) {
@@ -418,6 +429,22 @@ class ModalSettingsComponent extends React.PureComponent <ModalSettingsProps, Mo
                                             {t(opt.labelKey)}
                                         </h2>
                                     ))}
+                                </div>
+                            </div>
+                            )}
+
+                            {isExpat && (
+                            <div className={'settings-block'}>
+                                <div className={'title-block'}>
+                                    <h2 className='title'>{t('settings.wordLanguage')}</h2>
+                                </div>
+                                <div className={'info-block'}>
+                                    <h2 className={`${this.state.language === 'ru' ? 'active' : ''}`}
+                                        onClick={() => this.changeLanguage('ru')}>RU</h2>
+                                    <h2 className={`${this.state.language === 'en' ? 'active' : ''}`}
+                                        onClick={() => this.changeLanguage('en')}>EN</h2>
+                                    <h2 className={`${this.state.language === 'de' ? 'active' : ''}`}
+                                        onClick={() => this.changeLanguage('de')}>DE</h2>
                                 </div>
                             </div>
                             )}

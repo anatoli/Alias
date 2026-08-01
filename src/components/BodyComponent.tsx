@@ -16,6 +16,8 @@ import {initAds, showInterstitialAfterRound} from "../services/ads";
 import {canShowNoAdsOffer, hasNoAdsSubscription, markNoAdsOfferShown} from "../services/subscription";
 import {loadGameSettings, saveGameSettings} from "../services/gameSettings";
 import {ExpatCategory, WordPack} from "./GameFrameComponent/helpArray";
+import {ensureDeckCollectionInStorage} from "../decks/deckStorage";
+import {GameLanguage} from "../decks/types";
 import {t} from "../i18n";
 // @ts-ignore
 import bgMusicSrc from "../res/audio/bg_sound.mp3"
@@ -38,6 +40,7 @@ interface BodyComponentState {
         categories: ExpatCategory[],
         wordPack: WordPack,
         customPackId: string,
+        language: GameLanguage,
         wordsToFinish: number
     }
 
@@ -75,6 +78,12 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
 
         // Local word bank immediately; remote updates in background
         startWordBankSync()
+        // Multi-language categorized expat decks (generated once per install)
+        try {
+            ensureDeckCollectionInStorage()
+        } catch (e) {
+            // optional — classic pack still works
+        }
         // Preload interstitial when Cordova/AdMob is ready
         void initAds()
     }
@@ -119,6 +128,7 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
             categories: stateSettings.categories,
             wordPack: stateSettings.wordPack,
             customPackId: stateSettings.customPackId,
+            language: stateSettings.language,
             wordsToFinish: stateSettings.wordsToFinish,
         })
         this.setState({
