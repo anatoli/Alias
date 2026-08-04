@@ -54,6 +54,7 @@ export type Messages = {
   'settings.hard': string
   'settings.targetScore': string
   'settings.wordLanguage': string
+  'settings.uiLanguage': string
   'settings.categories': string
 
   'pack.classic.title': string

@@ -18,7 +18,7 @@ import {loadGameSettings, saveGameSettings} from "../services/gameSettings";
 import {ExpatCategory, WordPack} from "./GameFrameComponent/helpArray";
 import {ensureDeckCollectionInStorage} from "../decks/deckStorage";
 import {GameLanguage} from "../decks/types";
-import {t} from "../i18n";
+import {getLocale, Locale, setUiLocale, SUPPORTED_LOCALES, t} from "../i18n";
 // @ts-ignore
 import bgMusicSrc from "../res/audio/bg_sound.mp3"
 
@@ -32,6 +32,7 @@ interface BodyComponentState {
     showingFrame: string | undefined,
     bgMusic: boolean,
     showNoAdsModal: boolean,
+    uiLocale: Locale,
     stateSettings: {
         showingFrame: undefined,
         time: number,
@@ -55,6 +56,7 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
             showingFrame: undefined,
             bgMusic: true,
             showNoAdsModal: false,
+            uiLocale: getLocale(),
             stateSettings: {
                 showingFrame: undefined,
                 ...saved,
@@ -146,6 +148,12 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
         this.setType('Settings')
     }
 
+    onUiLocaleChange = (locale: Locale) => {
+        if (!SUPPORTED_LOCALES.includes(locale)) return
+        setUiLocale(locale)
+        this.setState({ uiLocale: locale })
+    }
+
     newLap = () => {
         const teamsActiveList: Record<string, boolean> = this.safeParseJSON(localStorage.getItem('teamsActiveList'), {})
         Object.keys(teamsActiveList).forEach((el) => (teamsActiveList[el] = false))
@@ -234,6 +242,8 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
                         settings={this.state.stateSettings}
                         soundEnabled={soundEnabled}
                         bgMusicEnabled={this.state.bgMusic}
+                        uiLocale={this.state.uiLocale}
+                        onUiLocaleChange={this.onUiLocaleChange}
                         onToggleSound={(enabled) => {
                             localStorage.setItem('sound-effect', enabled ? 'true' : 'false')
                             this.forceUpdate()

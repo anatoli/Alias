@@ -16,7 +16,7 @@ import VolumeOffIcon from '@material-ui/icons/VolumeOff';
 import {WordPack} from "../GameFrameComponent/helpArray";
 import {GameLanguage} from "../../decks/types";
 import {saveGameSettings} from "../../services/gameSettings";
-import {t} from "../../i18n";
+import {Locale, SUPPORTED_LOCALES, t} from "../../i18n";
 
 
 interface SettingGameProps {
@@ -34,6 +34,8 @@ interface SettingGameProps {
     }
     soundEnabled: boolean
     bgMusicEnabled: boolean
+    uiLocale: Locale
+    onUiLocaleChange: (locale: Locale) => void
     onToggleSound: (enabled: boolean) => void
     onToggleBgMusic: (enabled: boolean) => void
 }
@@ -218,6 +220,26 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
                                     <span className="slider round" />
                                 </label>
                             </div>
+                        </div>
+                    </div>
+
+                    <div className={'settings-block'}>
+                        <div className={'title-block'}>
+                            <h2 className='title'>{t('settings.uiLanguage')}</h2>
+                        </div>
+                        <div className={'info-block'}>
+                            {SUPPORTED_LOCALES.map((locale) => (
+                                <h2
+                                    key={locale}
+                                    className={`${this.props.uiLocale === locale ? 'active' : ''}`}
+                                    onClick={() => {
+                                        this.playSound('click')
+                                        this.props.onUiLocaleChange(locale)
+                                    }}
+                                >
+                                    {locale.toUpperCase()}
+                                </h2>
+                            ))}
                         </div>
                     </div>
                 </div>

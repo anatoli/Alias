@@ -5,7 +5,9 @@ import { Locale, MessageKey, Messages } from './types'
 
 const catalogs: Record<Locale, Messages> = { en, ru, de }
 
-const SUPPORTED: Locale[] = ['en', 'ru', 'de']
+export const SUPPORTED_LOCALES: Locale[] = ['en', 'ru', 'de']
+
+const UI_LOCALE_KEY = 'alias.uiLocale'
 
 /** Map device language to app locale; anything else → English. */
 export function detectLocale(raw?: string | null): Locale {
@@ -32,19 +34,51 @@ export function detectLocale(raw?: string | null): Locale {
   return 'en'
 }
 
+export function getSavedUiLocale(): Locale | null {
+  try {
+    const raw = localStorage.getItem(UI_LOCALE_KEY)
+    if (raw === 'en' || raw === 'ru' || raw === 'de') return raw
+  } catch (e) {
+    // ignore
+  }
+  return null
+}
+
 let currentLocale: Locale = detectLocale()
 
 export function getLocale(): Locale {
   return currentLocale
 }
 
+/** Apply locale in memory only (no persistence). */
 export function setLocale(locale: Locale) {
-  if (SUPPORTED.includes(locale)) currentLocale = locale
+  if (SUPPORTED_LOCALES.includes(locale)) currentLocale = locale
+  return currentLocale
 }
 
-export function initLocaleFromDevice() {
-  currentLocale = detectLocale()
+/** Persist manual UI language override and apply it. */
+export function setUiLocale(locale: Locale) {
+  if (!SUPPORTED_LOCALES.includes(locale)) return currentLocale
+  currentLocale = locale
+  try {
+    localStorage.setItem(UI_LOCALE_KEY, locale)
+  } catch (e) {
+    // ignore
+  }
   return currentLocale
+}
+
+/**
+ * Resolve UI locale: saved manual choice → device language → English.
+ */
+export function initLocale() {
+  currentLocale = getSavedUiLocale() || detectLocale()
+  return currentLocale
+}
+
+/** @deprecated Prefer initLocale() which respects a saved override. */
+export function initLocaleFromDevice() {
+  return initLocale()
 }
 
 function interpolate(template: string, params?: Record<string, string | number>): string {
@@ -66,3 +100,5 @@ export function categoryLabel(category: string): string {
   if (key in catalogs.en) return t(key)
   return category
 }
+
+export type { Locale, MessageKey, Messages }

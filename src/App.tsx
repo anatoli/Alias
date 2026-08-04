@@ -3,19 +3,19 @@ import './App.css';
 
 import HeaderComponent from "./components/HeaderComponent";
 import BodyComponent from "./components/BodyComponent";
-import { initLocaleFromDevice } from "./i18n";
+import { initLocale } from "./i18n";
 
 class App extends React.Component {
    constructor(props:any) {
      super(props);
-     initLocaleFromDevice()
+     initLocale()
      this.state={}
    }
 
    state = {}
 
    componentDidMount() {
-       initLocaleFromDevice()
+       initLocale()
    }
 
 

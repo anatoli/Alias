@@ -56,6 +56,7 @@ const ru: Messages = {
   'settings.hard': 'Сложный',
   'settings.targetScore': 'Цель по очкам',
   'settings.wordLanguage': 'Язык слов',
+  'settings.uiLanguage': 'Язык интерфейса',
   'settings.categories': 'Категории',
 
   'pack.classic.title': 'Classic',
