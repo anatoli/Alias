@@ -1,4 +1,4 @@
-﻿package admob.plus.cordova;
+package admob.plus.cordova;
 
 import android.app.Activity;
 import android.content.Intent;
