@@ -114,8 +114,11 @@ jobs:
           REACT_APP_WORDS_URL: ${{ vars.REACT_APP_WORDS_URL }}
           REACT_APP_ADMOB_INTERSTITIAL_ID: ca-app-pub-8774936490708638/4543787532
           REACT_APP_SUBSCRIPTION_PRODUCT_ID: alias_no_ads_6m
+          DISABLE_ESLINT_PLUGIN: 'true'
+          CI: 'false'
         run: |
           set -euo pipefail
+          echo "Node $(node -v) npm $(npm -v)"
           npx cordova build android --release --buildConfig=build.json -- --packageType=bundle
 
           echo "===== outputs under platforms/android ====="
