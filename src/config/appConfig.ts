@@ -8,10 +8,10 @@ export const APP_CONFIG = {
     (typeof process !== 'undefined' && process.env && process.env.REACT_APP_WORDS_URL) ||
     'https://cdn.example.com/alias/word-bank.json',
 
-  /** AdMob interstitial unit (use Google test ID until production unit is ready) */
+  /** AdMob interstitial unit (production) */
   admobInterstitialId:
     (typeof process !== 'undefined' && process.env && process.env.REACT_APP_ADMOB_INTERSTITIAL_ID) ||
-    'ca-app-pub-3940256099942544/1033173712',
+    'ca-app-pub-8774936490708638/4543787532',
 
   /** Play Billing subscription product id (6 months, discounted) */
   subscriptionProductId:

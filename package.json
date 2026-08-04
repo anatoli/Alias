@@ -1,7 +1,7 @@
 {
   "name": "alias-bitte",
   "displayName": "Alias, bitte",
-  "version": "1.4.15",
+  "version": "1.4.16",
   "description": "Alias party game for friends and expats",
   "main": "index.js",
   "scripts": {
@@ -77,7 +77,7 @@
       "cordova-plugin-background-mode": {},
       "cordova-plugin-insomnia": {},
       "admob-plus-cordova": {
-        "APP_ID_ANDROID": "ca-app-pub-8774936490708638~4881147544",
+        "APP_ID_ANDROID": "ca-app-pub-8774936490708638~9388085959",
         "PLAY_SERVICES_VERSION": "20.6.0"
       },
       "admob-plus-cordova-native": {}
