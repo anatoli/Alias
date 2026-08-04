@@ -22,7 +22,7 @@
     "cordova-plugin-purchase": {
       "PACKAGE_NAME": "com.AAA.Alias"
     },
-    "admob-plus-cordova": {
+    "community-admob-plus-cordova": {
       "APP_ID_ANDROID": "ca-app-pub-8774936490708638~9388085959",
       "PLAY_SERVICES_VERSION": "25.4.0",
       "PACKAGE_NAME": "com.AAA.Alias"

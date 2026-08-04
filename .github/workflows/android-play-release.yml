@@ -119,7 +119,18 @@ jobs:
         run: |
           set -euo pipefail
           echo "Node $(node -v) npm $(npm -v)"
-          npx cordova build android --release --buildConfig=build.json -- --packageType=bundle
+          set +e
+          npx cordova build android --release --buildConfig=build.json -- --packageType=bundle 2>&1 | tee /tmp/cordova-build.log
+          BUILD_RC=${PIPESTATUS[0]}
+          set -e
+          if [ "$BUILD_RC" -ne 0 ]; then
+            echo "::error::cordova build failed (rc=$BUILD_RC)"
+            echo "===== last 120 lines of cordova build ====="
+            tail -n 120 /tmp/cordova-build.log || true
+            echo "===== java/error grep ====="
+            grep -nEi 'error:|FAILED|FAILURE|cannot find symbol|Manifest merger|What went wrong' /tmp/cordova-build.log | tail -n 80 || true
+            exit "$BUILD_RC"
+          fi
 
           echo "===== outputs under platforms/android ====="
           find platforms/android -type f \( -name '*.aab' -o -name '*.apk' \) -print || true
