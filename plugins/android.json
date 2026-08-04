@@ -26,6 +26,9 @@
     },
     "admob-plus-cordova-native": {
       "PACKAGE_NAME": "com.AAA.Alias"
+    },
+    "cordova-plugin-purchase": {
+      "PACKAGE_NAME": "com.AAA.Alias"
     }
   },
   "dependent_plugins": {

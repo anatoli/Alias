@@ -113,7 +113,7 @@ jobs:
         env:
           REACT_APP_WORDS_URL: ${{ vars.REACT_APP_WORDS_URL }}
           REACT_APP_ADMOB_INTERSTITIAL_ID: ca-app-pub-8774936490708638/4543787532
-          REACT_APP_SUBSCRIPTION_PRODUCT_ID: ${{ vars.REACT_APP_SUBSCRIPTION_PRODUCT_ID }}
+          REACT_APP_SUBSCRIPTION_PRODUCT_ID: alias_no_ads_6m
         run: |
           set -euo pipefail
           npx cordova build android --release --buildConfig=build.json -- --packageType=bundle

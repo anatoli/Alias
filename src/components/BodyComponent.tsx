@@ -13,7 +13,7 @@ import ButtonComponent from "./ButtonComponent";
 import NoAdsModalComponent from "./NoAdsModalComponent";
 import {startWordBankSync} from "../services/wordSync";
 import {initAds, showInterstitialAfterRound} from "../services/ads";
-import {canShowNoAdsOffer, hasNoAdsSubscription, markNoAdsOfferShown} from "../services/subscription";
+import {canShowNoAdsOffer, hasNoAdsSubscription, initBillingStore, markNoAdsOfferShown} from "../services/subscription";
 import {loadGameSettings, saveGameSettings} from "../services/gameSettings";
 import {ExpatCategory, WordPack} from "./GameFrameComponent/helpArray";
 import {ensureDeckCollectionInStorage} from "../decks/deckStorage";
@@ -86,6 +86,8 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
         }
         // Preload interstitial when Cordova/AdMob is ready
         void initAds()
+        // Google Play Billing — required before subscription product can be created in Console
+        void initBillingStore()
     }
 
     setType = (type: string) =>{
