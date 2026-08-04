@@ -21,7 +21,7 @@
     },
     "admob-plus-cordova": {
       "APP_ID_ANDROID": "ca-app-pub-8774936490708638~9388085959",
-      "PLAY_SERVICES_VERSION": "24.8.0",
+      "PLAY_SERVICES_VERSION": "25.4.0",
       "PACKAGE_NAME": "com.AAA.Alias"
     },
     "admob-plus-cordova-native": {
