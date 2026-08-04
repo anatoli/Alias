@@ -94,7 +94,8 @@
     },
     "is_top_level": true,
     "variables": {
-      "APP_ID_ANDROID": "ca-app-pub-8774936490708638~9388085959"
+      "APP_ID_ANDROID": "ca-app-pub-8774936490708638~9388085959",
+      "PLAY_SERVICES_VERSION": "24.8.0"
     }
   },
   "admob-plus-cordova-native": {
