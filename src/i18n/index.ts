@@ -100,5 +100,3 @@ export function categoryLabel(category: string): string {
   if (key in catalogs.en) return t(key)
   return category
 }
-
-export type { Locale, MessageKey, Messages }

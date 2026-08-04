@@ -18,7 +18,8 @@ import {loadGameSettings, saveGameSettings} from "../services/gameSettings";
 import {ExpatCategory, WordPack} from "./GameFrameComponent/helpArray";
 import {ensureDeckCollectionInStorage} from "../decks/deckStorage";
 import {GameLanguage} from "../decks/types";
-import {getLocale, Locale, setUiLocale, SUPPORTED_LOCALES, t} from "../i18n";
+import {getLocale, setUiLocale, SUPPORTED_LOCALES, t} from "../i18n";
+import {Locale} from "../i18n/types";
 // @ts-ignore
 import bgMusicSrc from "../res/audio/bg_sound.mp3"
 

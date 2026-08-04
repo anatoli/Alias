@@ -16,7 +16,8 @@ import VolumeOffIcon from '@material-ui/icons/VolumeOff';
 import {WordPack} from "../GameFrameComponent/helpArray";
 import {GameLanguage} from "../../decks/types";
 import {saveGameSettings} from "../../services/gameSettings";
-import {Locale, SUPPORTED_LOCALES, t} from "../../i18n";
+import {SUPPORTED_LOCALES, t} from "../../i18n";
+import {Locale} from "../../i18n/types";
 
 
 interface SettingGameProps {
