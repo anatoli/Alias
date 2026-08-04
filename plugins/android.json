@@ -19,15 +19,12 @@
     "cordova-plugin-insomnia": {
       "PACKAGE_NAME": "com.AAA.Alias"
     },
-    "admob-plus-cordova": {
+    "cordova-plugin-purchase": {
+      "PACKAGE_NAME": "com.AAA.Alias"
+    },
+    "community-admob-plus-cordova": {
       "APP_ID_ANDROID": "ca-app-pub-8774936490708638~9388085959",
       "PLAY_SERVICES_VERSION": "25.4.0",
-      "PACKAGE_NAME": "com.AAA.Alias"
-    },
-    "admob-plus-cordova-native": {
-      "PACKAGE_NAME": "com.AAA.Alias"
-    },
-    "cordova-plugin-purchase": {
       "PACKAGE_NAME": "com.AAA.Alias"
     }
   },

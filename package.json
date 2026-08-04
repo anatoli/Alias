@@ -1,7 +1,7 @@
 {
   "name": "alias-bitte",
   "displayName": "Alias, bitte",
-  "version": "1.4.20",
+  "version": "1.4.21",
   "description": "Alias party game for friends and expats",
   "main": "index.js",
   "scripts": {
@@ -27,8 +27,7 @@
     "@material-ui/lab": "^4.0.0-alpha.60",
     "@material-ui/styles": "^4.11.4",
     "@typescript-eslint/eslint-plugin": "^4.31.2",
-    "admob-plus-cordova": "1.28.0",
-    "admob-plus-cordova-native": "0.3.0",
+    "community-admob-plus-cordova": "1.33.2",
     "cordova": "^12.0.0",
     "cordova-plugin-purchase": "13.18.0",
     "jest-diff": "^25.5.0",
@@ -77,12 +76,11 @@
       "cordova-plugin-dialogs": {},
       "cordova-plugin-background-mode": {},
       "cordova-plugin-insomnia": {},
-      "admob-plus-cordova": {
+      "cordova-plugin-purchase": {},
+      "community-admob-plus-cordova": {
         "APP_ID_ANDROID": "ca-app-pub-8774936490708638~9388085959",
         "PLAY_SERVICES_VERSION": "25.4.0"
-      },
-      "admob-plus-cordova-native": {},
-      "cordova-plugin-purchase": {}
+      }
     },
     "platforms": [
       "browser",
