@@ -95,15 +95,15 @@
     "is_top_level": true,
     "variables": {}
   },
-  "community-admob-plus-cordova": {
+  "admob-plus-cordova": {
     "source": {
       "type": "registry",
-      "id": "community-admob-plus-cordova"
+      "id": "admob-plus-cordova@1.28.0"
     },
     "is_top_level": true,
     "variables": {
       "APP_ID_ANDROID": "ca-app-pub-8774936490708638~9388085959",
-      "PLAY_SERVICES_VERSION": "25.4.0"
+      "PLAY_SERVICES_VERSION": "20.6.0"
     }
   }
 }
