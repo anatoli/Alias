@@ -10,6 +10,8 @@ import {ExpatCategory, WordPack} from "../../GameFrameComponent/helpArray";
 import {EXPAT_DECK} from "../../GameFrameComponent/helpArray";
 import {GameLanguage} from "../../../decks/types";
 import {getWordsForLevel} from "../../../services/wordSync";
+import {getDeckCollectionFromStorage} from "../../../decks/deckStorage";
+import {resolveGameLanguage} from "../../../services/gameSettings";
 import {
     deleteCustomPack,
     getCustomPack,
@@ -86,7 +88,7 @@ class ModalSettingsComponent extends React.PureComponent <ModalSettingsProps, Mo
             hardLevel: this.props.settings.hardLevel,
             wordPack: this.props.settings.wordPack || 'classic',
             customPackId: this.props.settings.customPackId || '',
-            language: this.props.settings.language || 'ru',
+            language: resolveGameLanguage(this.props.settings.language),
             categories: (this.props.settings.categories && this.props.settings.categories.length > 0
                 ? this.props.settings.categories
                 : ALL_CATEGORIES.slice()),
@@ -110,7 +112,7 @@ class ModalSettingsComponent extends React.PureComponent <ModalSettingsProps, Mo
                 hardLevel: this.props.settings.hardLevel,
                 wordPack: this.props.settings.wordPack || 'classic',
                 customPackId: this.props.settings.customPackId || '',
-                language: this.props.settings.language || 'ru',
+                language: resolveGameLanguage(this.props.settings.language),
                 categories: (this.props.settings.categories && this.props.settings.categories.length > 0
                     ? this.props.settings.categories
                     : ALL_CATEGORIES.slice()),
@@ -246,20 +248,30 @@ class ModalSettingsComponent extends React.PureComponent <ModalSettingsProps, Mo
     }
 
     getPreviewWords = (): string[] => {
-        const { wordPack, hardLevel, categories, customPackId } = this.state
+        const { wordPack, hardLevel, categories, customPackId, language } = this.state
         if (wordPack === 'custom') {
             const pack = getCustomPack(customPackId)
             return pack ? pack.words.slice() : []
         }
         if (wordPack === 'expat') {
             const selected = categories.length > 0 ? categories : ALL_CATEGORIES
+            const lang = resolveGameLanguage(language)
+            const collection = getDeckCollectionFromStorage()
+            const langDeck = collection && collection.languages && collection.languages[lang]
             const words: string[] = []
-            selected.forEach((cat) => {
-                (EXPAT_DECK[cat] || []).forEach((w) => words.push(w))
-            })
+            if (langDeck) {
+                selected.forEach((cat) => {
+                    (langDeck[cat] || []).forEach((w) => words.push(w))
+                })
+            }
+            if (words.length < 1) {
+                selected.forEach((cat) => {
+                    (EXPAT_DECK[cat] || []).forEach((w) => words.push(w))
+                })
+            }
             return words
         }
-        return getWordsForLevel(hardLevel).slice()
+        return getWordsForLevel(hardLevel, resolveGameLanguage(language)).slice()
     }
 
     getPreviewTitle = (): string => {

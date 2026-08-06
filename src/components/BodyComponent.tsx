@@ -14,7 +14,7 @@ import NoAdsModalComponent from "./NoAdsModalComponent";
 import {startWordBankSync} from "../services/wordSync";
 import {initAds, showInterstitialAfterRound} from "../services/ads";
 import {canShowNoAdsOffer, hasNoAdsSubscription, initBillingStore, markNoAdsOfferShown} from "../services/subscription";
-import {loadGameSettings, saveGameSettings} from "../services/gameSettings";
+import {loadGameSettings, resolveGameLanguage, saveGameSettings} from "../services/gameSettings";
 import {ExpatCategory, WordPack} from "./GameFrameComponent/helpArray";
 import {ensureDeckCollectionInStorage} from "../decks/deckStorage";
 import {GameLanguage} from "../decks/types";
@@ -47,6 +47,8 @@ interface BodyComponentState {
     }
 
 }
+
+const WORD_LANG_UI_SYNC_KEY = 'alias.wordLangUiSync.v1'
 
 class BodyComponent extends React.PureComponent <BodyComponentProps, BodyComponentState> {
     constructor(props:any) {
@@ -87,6 +89,20 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
         } catch (e) {
             // optional — classic pack still works
         }
+
+        // One-time: align saved word language with UI locale for existing installs
+        if (!localStorage.getItem(WORD_LANG_UI_SYNC_KEY)) {
+            const language = resolveGameLanguage()
+            const persisted = saveGameSettings({ language })
+            this.setState((prev) => ({
+                stateSettings: {
+                    ...prev.stateSettings,
+                    ...persisted,
+                },
+            }))
+            localStorage.setItem(WORD_LANG_UI_SYNC_KEY, '1')
+        }
+
         // Preload interstitial when Cordova/AdMob is ready
         void initAds()
         // Google Play Billing — required before subscription product can be created in Console
@@ -152,7 +168,15 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
     onUiLocaleChange = (locale: Locale) => {
         if (!SUPPORTED_LOCALES.includes(locale)) return
         setUiLocale(locale)
-        this.setState({ uiLocale: locale })
+        const persisted = saveGameSettings({ language: locale })
+        this.setState({
+            uiLocale: locale,
+            stateSettings: {
+                ...this.state.stateSettings,
+                language: locale,
+                ...persisted,
+            },
+        })
     }
 
     newLap = () => {

@@ -1,6 +1,8 @@
 import bundled from '../data/word-bank.json'
 import { APP_CONFIG, HardLevel } from '../config/appConfig'
-
+import { getDeckCollectionFromStorage } from '../decks/deckStorage'
+import { GameLanguage } from '../decks/types'
+import { resolveGameLanguage } from './gameSettings'
 export type WordBankPayload = {
   version: number
   updatedAt?: string
@@ -60,21 +62,48 @@ function bundledBank(): WordBankPayload {
   }
 }
 
+function classicWordsFromCollection(lang: GameLanguage, level: HardLevel): string[] | null {
+  const collection = getDeckCollectionFromStorage()
+  const langDeck = collection && collection.languages && collection.languages[lang]
+  if (!langDeck) return null
+
+  const all = Array.from(
+    new Set(
+      Object.values(langDeck)
+        .flat()
+        .map((w) => String(w || '').trim())
+        .filter((w) => w.length > 0)
+    )
+  )
+  if (all.length < 50) return null
+
+  all.sort((a, b) => a.localeCompare(b))
+  const third = Math.max(1, Math.floor(all.length / 3))
+  if (level === 'EASY') return all.slice(0, third)
+  if (level === 'HARD') return all.slice(third * 2)
+  return all.slice(third, third * 2)
+}
+
 /** Immediate words for play: local cache → bundled. Never blocks on network. */
-export function getLocalWordBank(): WordBankPayload {
-  const cached = readCache()
+export function getLocalWordBank(): WordBankPayload {  const cached = readCache()
   if (cached) return cached
   const bank = bundledBank()
   writeCache(bank, 'bundled')
   return bank
 }
 
-export function getWordsForLevel(level: HardLevel | string): string[] {
+export function getWordsForLevel(level: HardLevel | string, language?: GameLanguage): string[] {
   const key = (String(level || 'NORMAL').toUpperCase() as HardLevel)
+  const lang = resolveGameLanguage(language)
+
+  if (lang === 'en' || lang === 'de') {
+    const fromCollection = classicWordsFromCollection(lang, key)
+    if (fromCollection && fromCollection.length > 0) return fromCollection
+  }
+
   const bank = getLocalWordBank()
   return bank.difficulties[key] || bank.difficulties.NORMAL
 }
-
 export function getWordBankMeta(): CacheMeta | null {
   try {
     const raw = localStorage.getItem(META_KEY)

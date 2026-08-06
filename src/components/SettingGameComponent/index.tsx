@@ -15,7 +15,7 @@ import VolumeUpIcon from '@material-ui/icons/VolumeUp';
 import VolumeOffIcon from '@material-ui/icons/VolumeOff';
 import {WordPack} from "../GameFrameComponent/helpArray";
 import {GameLanguage} from "../../decks/types";
-import {saveGameSettings} from "../../services/gameSettings";
+import {saveGameSettings, resolveGameLanguage} from "../../services/gameSettings";
 import {SUPPORTED_LOCALES, t} from "../../i18n";
 import {Locale} from "../../i18n/types";
 
@@ -69,12 +69,18 @@ class SettingGameComponent extends React.PureComponent <SettingGameProps, Settin
             categories: this.props.settings.categories,
             wordPack: this.props.settings.wordPack || 'classic',
             customPackId: this.props.settings.customPackId || '',
-            language: this.props.settings.language || 'ru',
+            language: resolveGameLanguage(this.props.settings.language),
             wordsToFinish: this.props.settings.wordsToFinish,
             modalSettingsIsOpen: false
         }
 
 
+    }
+
+    componentDidUpdate(prevProps: SettingGameProps) {
+        if (prevProps.uiLocale !== this.props.uiLocale) {
+            this.setState({ language: this.props.uiLocale }, () => this.persist())
+        }
     }
 
     playSound = playSound

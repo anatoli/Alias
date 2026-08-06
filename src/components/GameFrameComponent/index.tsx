@@ -16,6 +16,7 @@ import {playSound, haptic} from "../utils";
 import {EXPAT_DECK, HardLevel, ExpatCategory, WordPack} from "./helpArray";
 import {getWordsForLevel} from "../../services/wordSync";
 import {getCustomPack} from "../../services/customPacks";
+import {resolveGameLanguage} from "../../services/gameSettings";
 import {t, categoryLabel} from "../../i18n";
 import {getDeckCollectionFromStorage} from "../../decks/deckStorage";
 import {GameLanguage} from "../../decks/types";
@@ -122,7 +123,7 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
         const level = String(this.props.settings.hardLevel || 'NORMAL').toUpperCase()
         const cats = (this.props.settings.categories || []).slice().sort().join('|')
         const customId = this.props.settings.customPackId || ''
-        const language = this.props.settings.language || 'ru'
+        const language = resolveGameLanguage(this.props.settings.language)
         return `${pack}|${level}|${cats}|${customId}|${language}`
     }
 
@@ -158,7 +159,7 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
         if (pack === 'expat') {
             const selected = this.props.settings.categories
             const categories = (selected && selected.length > 0 ? selected : (Object.keys(EXPAT_DECK) as ExpatCategory[]))
-            const language: GameLanguage = this.props.settings.language || 'ru'
+            const language = resolveGameLanguage(this.props.settings.language)
             const collection = getDeckCollectionFromStorage()
             const langDeck = collection && collection.languages && collection.languages[language]
             const deck: Card[] = []
@@ -177,7 +178,8 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
             return deck
         }
         const level = (String(this.props.settings.hardLevel || 'NORMAL').toUpperCase() as HardLevel)
-        return getWordsForLevel(level).map((text) => ({ text }))
+        const language = resolveGameLanguage(this.props.settings.language)
+        return getWordsForLevel(level, language).map((text) => ({ text }))
     }
 
    async componentDidMount() {

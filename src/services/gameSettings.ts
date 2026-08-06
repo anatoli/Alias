@@ -1,5 +1,6 @@
 import { ExpatCategory, WordPack } from '../components/GameFrameComponent/helpArray'
 import { GameLanguage } from '../decks/types'
+import { getLocale } from '../i18n'
 
 const STORAGE_KEY = 'alias.gameSettings.v1'
 
@@ -12,6 +13,13 @@ export type PersistedGameSettings = {
   customPackId: string
   language: GameLanguage
   wordsToFinish: number
+}
+
+/** Word language aligned with UI locale (ru / en / de). */
+export function resolveGameLanguage(explicit?: GameLanguage | null): GameLanguage {
+  if (explicit === 'en' || explicit === 'de' || explicit === 'ru') return explicit
+  const ui = getLocale()
+  return ui === 'en' || ui === 'de' || ui === 'ru' ? ui : 'en'
 }
 
 const DEFAULT_CATEGORIES: ExpatCategory[] = [
@@ -28,13 +36,13 @@ const DEFAULT_CATEGORIES: ExpatCategory[] = [
 ]
 
 export function defaultGameSettings(): PersistedGameSettings {
-  // Keep English defaults in storage for stability; UI localizes new names via t()
+  const language = resolveGameLanguage()
   return {
     time: 30,
     hardLevel: 'NORMAL',
     wordPack: 'classic',
     customPackId: '',
-    language: 'ru',
+    language,
     teams: [{ name: 'Player 1' }, { name: 'Player 2' }],
     categories: DEFAULT_CATEGORIES.slice(),
     wordsToFinish: 30,
@@ -58,7 +66,7 @@ function normalizeWordPack(raw: unknown): WordPack {
 
 function normalizeLanguage(raw: unknown): GameLanguage {
   if (raw === 'en' || raw === 'de' || raw === 'ru') return raw
-  return 'ru'
+  return resolveGameLanguage()
 }
 
 function normalizeCategories(raw: unknown): ExpatCategory[] {
