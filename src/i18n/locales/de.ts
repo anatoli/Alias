@@ -12,6 +12,10 @@ const de: Messages = {
   'common.restart': 'Neu starten',
   'common.skip': 'Überspringen',
   'common.locked': 'Gesperrt',
+  'common.exitAppTitle': 'App beenden?',
+  'common.exitAppMessage': 'Alias wirklich schließen?',
+  'common.exitAppYes': 'Beenden',
+  'common.exitAppNo': 'Abbrechen',
 
   'rules.title': 'Regeln',
   'rules.1': 'Teams spielen abwechselnd. Ein Spieler erklärt Wörter; die anderen raten.',

@@ -17,6 +17,7 @@ interface ListWordsState {
         listWords: {[k: string]: boolean},
         streakBonus?: number
     }
+    advancing: boolean
 }
 
 class ListWordsComponent extends React.PureComponent <ListWordsProps, ListWordsState> {
@@ -31,7 +32,8 @@ class ListWordsComponent extends React.PureComponent <ListWordsProps, ListWordsS
                 team: '',
                 listWords: {},
                 streakBonus: 0,
-            }
+            },
+            advancing: false,
         }
     }
 
@@ -73,6 +75,9 @@ class ListWordsComponent extends React.PureComponent <ListWordsProps, ListWordsS
     }
 
     onNext = () => {
+        if (this.state.advancing) return
+        this.setState({ advancing: true })
+
         const key: string = localStorage.getItem('currentTeam') || ''
         type TeamScore = { name: string, trues: number, wrong: number, bonus: number, score: number }
         let results: { [name: string]: TeamScore } | null = null
@@ -107,7 +112,11 @@ class ListWordsComponent extends React.PureComponent <ListWordsProps, ListWordsS
             localStorage.setItem('results', JSON.stringify(results))
         }
 
-        this.props.onNext()
+        try {
+            this.props.onNext()
+        } catch {
+            this.setState({ advancing: false })
+        }
     }
 
     render() {
@@ -148,7 +157,11 @@ class ListWordsComponent extends React.PureComponent <ListWordsProps, ListWordsS
                             </div>
                         )}
                     </div>
-                    <div className={'btn'} onClick={this.onNext}>
+                    <div
+                        className={`btn ${this.state.advancing ? 'btn--disabled' : ''}`}
+                        onClick={this.onNext}
+                        aria-busy={this.state.advancing}
+                    >
                         <h1>{t('common.next')}</h1>
                     </div>
                 </div>

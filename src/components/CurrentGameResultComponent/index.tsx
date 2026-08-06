@@ -125,6 +125,7 @@ class CurrentGameResultComponent extends React.PureComponent <CurrentGameResultP
     }
 
     onNext = () => {
+        if (this.state.WINNER) return
         this.props.onNext()
     }
 

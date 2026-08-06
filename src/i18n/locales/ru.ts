@@ -12,6 +12,10 @@ const ru: Messages = {
   'common.restart': 'Заново',
   'common.skip': 'Пропуск',
   'common.locked': 'Закрыто',
+  'common.exitAppTitle': 'Выйти из приложения?',
+  'common.exitAppMessage': 'Точно хотите закрыть Alias?',
+  'common.exitAppYes': 'Выйти',
+  'common.exitAppNo': 'Отмена',
 
   'rules.title': 'Правила',
   'rules.1': 'Команды ходят по очереди. Один игрок объясняет слова, остальные угадывают.',

@@ -1,6 +1,8 @@
 import React from "react";
 import '../App.css';
 import './BodyComponent.css';
+import Dialog from '@material-ui/core/Dialog';
+import Button from '@material-ui/core/Button';
 import SettingGameComponent from "./SettingGameComponent";
 import BeforeStartFrameComponent from "./BeforeStartFrameComponent";
 import TimerComponent from "./TimerComponent";
@@ -9,11 +11,10 @@ import ListWordsComponent from "./ListWordsComponent";
 import CurrentGameResultComponent from "./CurrentGameResultComponent";
 import RulesComponent from "./RulesComponent";
 import {playSound} from "./utils";
-import ButtonComponent from "./ButtonComponent";
 import NoAdsModalComponent from "./NoAdsModalComponent";
 import {startWordBankSync} from "../services/wordSync";
 import {initAds, showInterstitialAfterRound} from "../services/ads";
-import {canShowNoAdsOffer, hasNoAdsSubscription, initBillingStore, markNoAdsOfferShown} from "../services/subscription";
+import {canShowNoAdsOffer, initBillingStore, markNoAdsOfferShown} from "../services/subscription";
 import {loadGameSettings, resolveGameLanguage, saveGameSettings} from "../services/gameSettings";
 import {ExpatCategory, WordPack} from "./GameFrameComponent/helpArray";
 import {ensureDeckCollectionInStorage} from "../decks/deckStorage";
@@ -33,6 +34,7 @@ interface BodyComponentState {
     showingFrame: string | undefined,
     bgMusic: boolean,
     showNoAdsModal: boolean,
+    showExitAppConfirm: boolean,
     uiLocale: Locale,
     stateSettings: {
         showingFrame: undefined,
@@ -49,8 +51,30 @@ interface BodyComponentState {
 }
 
 const WORD_LANG_UI_SYNC_KEY = 'alias.wordLangUiSync.v1'
+const EXIT_DOUBLE_BACK_MS = 2000
+const HARDWARE_BACK_EVENT = 'alias:hardwareBack'
+
+function exitNativeApp() {
+    try {
+        const app = (navigator as any).app
+        if (app && typeof app.exitApp === 'function') {
+            app.exitApp()
+            return
+        }
+    } catch (e) {
+        // ignore
+    }
+    try {
+        window.close()
+    } catch (e) {
+        // ignore
+    }
+}
 
 class BodyComponent extends React.PureComponent <BodyComponentProps, BodyComponentState> {
+    private advancingFromReview = false
+    private lastBackPressAt = 0
+
     constructor(props:any) {
         super(props);
 
@@ -59,6 +83,7 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
             showingFrame: undefined,
             bgMusic: true,
             showNoAdsModal: false,
+            showExitAppConfirm: false,
             uiLocale: getLocale(),
             stateSettings: {
                 showingFrame: undefined,
@@ -107,6 +132,69 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
         void initAds()
         // Google Play Billing — required before subscription product can be created in Console
         void initBillingStore()
+
+        document.addEventListener('backbutton', this.onHardwareBack, false)
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener('backbutton', this.onHardwareBack, false)
+    }
+
+    /** Cordova Android hardware back. */
+    onHardwareBack = (e?: Event) => {
+        if (e && typeof (e as any).preventDefault === 'function') {
+            ;(e as any).preventDefault()
+        }
+
+        const now = Date.now()
+        const frame = this.state.showingFrame
+
+        // Second press while exit confirm is open → leave immediately
+        if (this.state.showExitAppConfirm) {
+            this.confirmExitApp()
+            return
+        }
+
+        // In-match gameplay: let GameFrame handle (pause / end-round confirm)
+        if (frame === 'PlayGame') {
+            document.dispatchEvent(new CustomEvent(HARDWARE_BACK_EVENT))
+            return
+        }
+
+        // Nested screens: step back in app navigation
+        if (frame === 'Rules' || frame === 'Settings') {
+            this.setState({ showingFrame: undefined })
+            return
+        }
+        if (frame === 'Start') {
+            this.onBackToSettings()
+            return
+        }
+        if (frame === 'Timer' || frame === 'ListOfGuessedWords' || frame === 'CurrentGameResult') {
+            // Mid-match: ask before abandoning to settings via exit-app style? Better go settings with restart semantics
+            this.restart()
+            return
+        }
+
+        // Home: first back → confirm; second within window → exit
+        if (now - this.lastBackPressAt < EXIT_DOUBLE_BACK_MS) {
+            this.confirmExitApp()
+            return
+        }
+        this.lastBackPressAt = now
+        this.setState({ showExitAppConfirm: true })
+    }
+
+    cancelExitApp = () => {
+        this.playSound('click')
+        this.lastBackPressAt = 0
+        this.setState({ showExitAppConfirm: false })
+    }
+
+    confirmExitApp = () => {
+        this.playSound('click')
+        this.setState({ showExitAppConfirm: false })
+        exitNativeApp()
     }
 
     setType = (type: string) =>{
@@ -228,15 +316,23 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
     }
 
     showResults = async () => {
-        const adResult = await showInterstitialAfterRound()
-        this.setType('CurrentGameResult')
-        // Offer subscription after a real ad — at most once per hour
-        if (adResult === 'shown' && canShowNoAdsOffer()) {
-            window.setTimeout(() => {
-                if (!canShowNoAdsOffer()) return
-                markNoAdsOfferShown()
-                this.setState({ showNoAdsModal: true })
-            }, 300)
+        if (this.advancingFromReview) return
+        this.advancingFromReview = true
+        try {
+            // Fail-open: ads must never block Next → results
+            const adResult = await showInterstitialAfterRound()
+            this.setType('CurrentGameResult')
+            if (adResult === 'shown' && canShowNoAdsOffer()) {
+                window.setTimeout(() => {
+                    if (!canShowNoAdsOffer()) return
+                    markNoAdsOfferShown()
+                    this.setState({ showNoAdsModal: true })
+                }, 300)
+            }
+        } catch {
+            this.setType('CurrentGameResult')
+        } finally {
+            this.advancingFromReview = false
         }
     }
 
@@ -344,6 +440,24 @@ class BodyComponent extends React.PureComponent <BodyComponentProps, BodyCompone
                     onClose={() => this.setState({ showNoAdsModal: false })}
                     onSubscribed={() => this.setState({ showNoAdsModal: false })}
                 />
+
+                <Dialog
+                    open={this.state.showExitAppConfirm}
+                    onClose={this.cancelExitApp}
+                    aria-labelledby="exit-app-title"
+                    PaperProps={{ className: 'winner-modal-paper' }}
+                >
+                    <div className="game-exit-dialog" style={{ padding: '20px 24px', textAlign: 'center' }}>
+                        <h2 id="exit-app-title" className="game-exit-dialog__title">{t('common.exitAppTitle')}</h2>
+                        <p className="game-exit-dialog__message">{t('common.exitAppMessage')}</p>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 16 }}>
+                            <Button color="primary" variant="contained" onClick={this.confirmExitApp}>
+                                {t('common.exitAppYes')}
+                            </Button>
+                            <Button onClick={this.cancelExitApp}>{t('common.exitAppNo')}</Button>
+                        </div>
+                    </div>
+                </Dialog>
 
             </div>
         );

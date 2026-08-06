@@ -12,6 +12,10 @@ export type Messages = {
   'common.restart': string
   'common.skip': string
   'common.locked': string
+  'common.exitAppTitle': string
+  'common.exitAppMessage': string
+  'common.exitAppYes': string
+  'common.exitAppNo': string
 
   'rules.title': string
   'rules.1': string

@@ -11,15 +11,43 @@ let started = false
 let interstitial: any = null
 let loading: Promise<void> | null = null
 
+const PRELOAD_TIMEOUT_MS = 8000
+const SHOW_TIMEOUT_MS = 5000
+
 function canUseAdmob(): boolean {
   return typeof window !== 'undefined' && !!(window as any).admob
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return new Promise((resolve) => {
+    let done = false
+    const timer = window.setTimeout(() => {
+      if (done) return
+      done = true
+      resolve(fallback)
+    }, ms)
+    promise.then(
+      (value) => {
+        if (done) return
+        done = true
+        window.clearTimeout(timer)
+        resolve(value)
+      },
+      () => {
+        if (done) return
+        done = true
+        window.clearTimeout(timer)
+        resolve(fallback)
+      }
+    )
+  })
 }
 
 export async function initAds(): Promise<void> {
   if (started) return
   if (!canUseAdmob()) return
   try {
-    await window.admob!.start()
+    await withTimeout(window.admob!.start(), 5000, undefined as any)
     started = true
     void preloadInterstitial()
   } catch {
@@ -34,10 +62,16 @@ export async function preloadInterstitial(): Promise<void> {
   loading = (async () => {
     try {
       if (!started) await initAds()
-      interstitial = new window.admob!.InterstitialAd({
+      if (!canUseAdmob()) return
+      const ad = new window.admob!.InterstitialAd({
         adUnitId: APP_CONFIG.admobInterstitialId,
       })
-      await interstitial.load()
+      const loaded = await withTimeout(
+        ad.load().then(() => true as const),
+        PRELOAD_TIMEOUT_MS,
+        false as const
+      )
+      interstitial = loaded ? ad : null
     } catch {
       interstitial = null
     } finally {
@@ -50,50 +84,56 @@ export async function preloadInterstitial(): Promise<void> {
 
 /**
  * Show interstitial after a round. Resolves when ad is closed or skipped.
- * Always resolves (fail-open) so UX never sticks.
+ * Always resolves within SHOW_TIMEOUT_MS so UX never sticks.
  */
 export function showInterstitialAfterRound(): Promise<'shown' | 'skipped' | 'error'> {
-  return new Promise(async (resolve) => {
-    if (hasNoAdsSubscription()) {
-      resolve('skipped')
-      return
-    }
-    if (!canUseAdmob()) {
-      resolve('skipped')
-      return
-    }
+  const run = async (): Promise<'shown' | 'skipped' | 'error'> => {
+    if (hasNoAdsSubscription()) return 'skipped'
+    if (!canUseAdmob()) return 'skipped'
 
     try {
-      if (!interstitial) await preloadInterstitial()
+      // Only show if already loaded — never block on a cold load here
       if (!interstitial) {
-        resolve('skipped')
-        return
-      }
-
-      const onDismiss = () => {
-        try {
-          interstitial.off && interstitial.off('dismiss', onDismiss)
-        } catch {
-          // ignore
-        }
-        // Reload next ad in background
-        interstitial = null
         void preloadInterstitial()
-        resolve('shown')
+        return 'skipped'
       }
 
-      if (typeof interstitial.on === 'function') {
-        interstitial.on('dismiss', onDismiss)
-      } else {
-        // Fallback: resolve shortly after show
-        setTimeout(onDismiss, 800)
-      }
+      const ad = interstitial
+      interstitial = null
 
-      await interstitial.show()
+      return await new Promise<'shown' | 'skipped' | 'error'>((resolve) => {
+        let settled = false
+        const finish = (result: 'shown' | 'skipped' | 'error') => {
+          if (settled) return
+          settled = true
+          window.clearTimeout(safetyTimer)
+          try {
+            ad.off && ad.off('dismiss', onDismiss)
+          } catch {
+            // ignore
+          }
+          void preloadInterstitial()
+          resolve(result)
+        }
+
+        const onDismiss = () => finish('shown')
+        const safetyTimer = window.setTimeout(() => finish('shown'), SHOW_TIMEOUT_MS)
+
+        try {
+          if (typeof ad.on === 'function') {
+            ad.on('dismiss', onDismiss)
+          }
+          void ad.show().catch(() => finish('error'))
+        } catch {
+          finish('error')
+        }
+      })
     } catch {
       interstitial = null
       void preloadInterstitial()
-      resolve('error')
+      return 'error'
     }
-  })
+  }
+
+  return withTimeout(run(), SHOW_TIMEOUT_MS + 1000, 'error')
 }

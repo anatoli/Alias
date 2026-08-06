@@ -12,6 +12,10 @@ const en: Messages = {
   'common.restart': 'Restart',
   'common.skip': 'Skip',
   'common.locked': 'Locked',
+  'common.exitAppTitle': 'Exit app?',
+  'common.exitAppMessage': 'Are you sure you want to leave Alias?',
+  'common.exitAppYes': 'Exit',
+  'common.exitAppNo': 'Cancel',
 
   'rules.title': 'Rules',
   'rules.1': 'Teams take turns. One player explains words; teammates guess.',

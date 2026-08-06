@@ -182,9 +182,10 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
         return getWordsForLevel(level, language).map((text) => ({ text }))
     }
 
-   async componentDidMount() {
+    componentDidMount() {
         this.startTimer()
         window.addEventListener('resize', this.scheduleAdjustWordTypography, { passive: true } as any)
+        document.addEventListener('alias:hardwareBack', this.onHardwareBack)
         const next = this.drawCard()
         if (next) {
             this.setState({currentWord: next.text, currentCategory: next.category, deck: next.remaining})
@@ -193,6 +194,7 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.scheduleAdjustWordTypography as any)
+        document.removeEventListener('alias:hardwareBack', this.onHardwareBack)
         if (this.resizeTimer !== undefined) {
             window.clearTimeout(this.resizeTimer)
             this.resizeTimer = undefined
@@ -201,6 +203,14 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
             window.clearInterval(this.intervalId)
             this.intervalId = undefined
         }
+    }
+
+    onHardwareBack = () => {
+        if (this.state.exitConfirmOpen) {
+            this.onExitConfirm()
+            return
+        }
+        this.onExitClick()
     }
 
     scheduleAdjustWordTypography = () => {
