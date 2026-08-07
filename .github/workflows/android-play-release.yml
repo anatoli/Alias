@@ -205,4 +205,5 @@ jobs:
           packageName: com.AAA.Alias
           releaseFiles: ${{ steps.aab.outputs.path }}
           track: ${{ github.event.inputs.track || 'internal' }}
-          status: draft
+          status: completed
+          releaseName: ${{ github.ref_name }}

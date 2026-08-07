@@ -1,7 +1,7 @@
 {
   "name": "alias-bitte",
   "displayName": "Alias, bitte",
-  "version": "1.4.30",
+  "version": "1.4.31",
   "description": "Alias party game for friends and expats",
   "main": "index.js",
   "scripts": {
@@ -42,7 +42,7 @@
     "@types/react": "16.8.19",
     "@types/react-dom": "16.8.4",
     "@types/webpack-env": "^1.13.9",
-    "cordova-android": "^15.0.0",
+    "cordova-android": "^15.1.0",
     "cordova-browser": "^6.0.0",
     "cordova-lib": "^11.0.0",
     "cordova-plugin-background-mode-alwaysmkt": "^0.7.3",

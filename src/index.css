@@ -28,6 +28,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
   min-height: 100dvh;
   min-height: 100vh;
+  /* Android 15 edge-to-edge: keep UI clear of system bars */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
 
   color: var(--text-primary);
   background: radial-gradient(1100px 760px at 18% 0%, rgba(124, 58, 237, 0.32), transparent 58%),

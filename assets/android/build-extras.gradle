@@ -1,0 +1,10 @@
+// Play Console: enable R8 for release AAB (Cordova Android)
+android {
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
