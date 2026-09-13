@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "packs": [
+    "home",
+    "food",
+    "travel",
+    "nature"
+  ]
+}

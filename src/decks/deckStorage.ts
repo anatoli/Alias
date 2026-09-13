@@ -1,5 +1,6 @@
 import {DeckCollection, ExpatCategory, GameLanguage} from './types'
 import {generateDeckCollection} from './deckGenerator'
+import {isPlayableCardText} from '../services/cardText'
 
 const STORAGE_KEY = 'alias_deck_collection_v1'
 
@@ -52,6 +53,7 @@ function isValidCollection(obj: any): obj is DeckCollection {
         const s = String(list[i] || '').replace(/\s+/g, ' ').trim()
         if (!s) return false
         if (!rx.test(s)) return false
+        if (!isPlayableCardText(s)) return false
       }
     }
   }

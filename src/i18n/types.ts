@@ -67,6 +67,14 @@ export type Messages = {
   'pack.expat.desc': string
   'pack.custom.title': string
   'pack.custom.desc': string
+  'pack.home.title': string
+  'pack.home.desc': string
+  'pack.food.title': string
+  'pack.food.desc': string
+  'pack.travel.title': string
+  'pack.travel.desc': string
+  'pack.nature.title': string
+  'pack.nature.desc': string
   'pack.seasonal.title': string
   'pack.seasonal.desc': string
 

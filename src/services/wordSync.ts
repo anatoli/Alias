@@ -3,6 +3,7 @@ import { APP_CONFIG, HardLevel } from '../config/appConfig'
 import { getDeckCollectionFromStorage } from '../decks/deckStorage'
 import { GameLanguage } from '../decks/types'
 import { resolveGameLanguage } from './gameSettings'
+import { filterPlayableCards } from './cardText'
 export type WordBankPayload = {
   version: number
   updatedAt?: string
@@ -75,13 +76,14 @@ function classicWordsFromCollection(lang: GameLanguage, level: HardLevel): strin
         .filter((w) => w.length > 0)
     )
   )
-  if (all.length < 50) return null
+  const playable = filterPlayableCards(all)
+  if (playable.length < 50) return null
 
-  all.sort((a, b) => a.localeCompare(b))
-  const third = Math.max(1, Math.floor(all.length / 3))
-  if (level === 'EASY') return all.slice(0, third)
-  if (level === 'HARD') return all.slice(third * 2)
-  return all.slice(third, third * 2)
+  playable.sort((a, b) => a.localeCompare(b))
+  const third = Math.max(1, Math.floor(playable.length / 3))
+  if (level === 'EASY') return playable.slice(0, third)
+  if (level === 'HARD') return playable.slice(third * 2)
+  return playable.slice(third, third * 2)
 }
 
 /** Immediate words for play: local cache → bundled. Never blocks on network. */
@@ -102,7 +104,9 @@ export function getWordsForLevel(level: HardLevel | string, language?: GameLangu
   }
 
   const bank = getLocalWordBank()
-  return bank.difficulties[key] || bank.difficulties.NORMAL
+  const raw = bank.difficulties[key] || bank.difficulties.NORMAL
+  const playable = filterPlayableCards(raw)
+  return playable.length >= 40 ? playable : raw
 }
 export function getWordBankMeta(): CacheMeta | null {
   try {

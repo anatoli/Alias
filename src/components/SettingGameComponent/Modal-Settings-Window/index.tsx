@@ -22,6 +22,7 @@ import {
 } from "../../../services/customPacks";
 import {hasPremiumWordFeatures} from "../../../services/subscription";
 import {PACK_CATALOG} from "../../../services/packCatalog";
+import {getThemedPackWords, isThemedPackId, THEMED_PACK_IDS, ThemedPackId} from "../../../services/themedPacks";
 import {t, categoryLabel} from "../../../i18n";
 import {MessageKey} from "../../../i18n/types";
 import NoAdsModalComponent from "../../NoAdsModalComponent";
@@ -253,6 +254,9 @@ class ModalSettingsComponent extends React.PureComponent <ModalSettingsProps, Mo
             const pack = getCustomPack(customPackId)
             return pack ? pack.words.slice() : []
         }
+        if (isThemedPackId(wordPack)) {
+            return getThemedPackWords(wordPack, resolveGameLanguage(language)).slice()
+        }
         if (wordPack === 'expat') {
             const selected = categories.length > 0 ? categories : ALL_CATEGORIES
             const lang = resolveGameLanguage(language)
@@ -281,6 +285,9 @@ class ModalSettingsComponent extends React.PureComponent <ModalSettingsProps, Mo
             return pack ? pack.name : t('preview.myPack')
         }
         if (wordPack === 'expat') return t('settings.packExpat')
+        if (isThemedPackId(wordPack)) {
+            return t(`pack.${wordPack}.title` as MessageKey)
+        }
         const diff = DIFFICULTY_OPTIONS.find((d) => d.key === hardLevel)
         return t('preview.classic', { level: diff ? t(diff.labelKey) : hardLevel })
     }
@@ -288,6 +295,8 @@ class ModalSettingsComponent extends React.PureComponent <ModalSettingsProps, Mo
     render() {
         const isExpat = this.state.wordPack === 'expat'
         const isCustom = this.state.wordPack === 'custom'
+        const isThemed = isThemedPackId(this.state.wordPack)
+        const isClassic = this.state.wordPack === 'classic'
         const isPremium = hasPremiumWordFeatures()
         const previewWords = this.state.previewOpen ? this.getPreviewWords() : []
         const comingSoonPacks = PACK_CATALOG.filter((p) => p.comingSoon)
@@ -304,11 +313,20 @@ class ModalSettingsComponent extends React.PureComponent <ModalSettingsProps, Mo
                                         {t('settings.viewWords')}
                                     </button>
                                 </div>
-                                <div className={'info-block'}>
-                                    <h2 className={`${this.state.wordPack === 'classic' ? 'active' : ''}`}
+                                <div className={'info-block'} style={{flexWrap: 'wrap'}}>
+                                    <h2 className={`${isClassic ? 'active' : ''}`}
                                         onClick={() => this.changePack('classic')}>{t('settings.packClassic')}</h2>
-                                    <h2 className={`${this.state.wordPack === 'expat' ? 'active' : ''}`}
+                                    <h2 className={`${isExpat ? 'active' : ''}`}
                                         onClick={() => this.changePack('expat')}>{t('settings.packExpat')}</h2>
+                                    {THEMED_PACK_IDS.map((id: ThemedPackId) => (
+                                        <h2
+                                            key={id}
+                                            className={`${this.state.wordPack === id ? 'active' : ''}`}
+                                            onClick={() => this.changePack(id)}
+                                        >
+                                            {t(`pack.${id}.title` as MessageKey)}
+                                        </h2>
+                                    ))}
                                     <h2
                                         className={`${isCustom ? 'active' : ''} ${!isPremium ? 'pack-option--locked' : ''}`}
                                         onClick={() => this.changePack('custom')}
@@ -423,7 +441,7 @@ class ModalSettingsComponent extends React.PureComponent <ModalSettingsProps, Mo
                                 </div>
                             </div>
 
-                            {!isExpat && !isCustom && (
+                            {isClassic && (
                             <div className={'settings-block'}>
                                 <div className={'title-block'}>
                                     <h2 className='title' style={{display: 'inline-flex', alignItems: 'center', gap: '8px'}}>
@@ -445,7 +463,7 @@ class ModalSettingsComponent extends React.PureComponent <ModalSettingsProps, Mo
                             </div>
                             )}
 
-                            {isExpat && (
+                            {(isExpat || isThemed) && (
                             <div className={'settings-block'}>
                                 <div className={'title-block'}>
                                     <h2 className='title'>{t('settings.wordLanguage')}</h2>

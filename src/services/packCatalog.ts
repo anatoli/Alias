@@ -30,6 +30,30 @@ export const PACK_CATALOG: CatalogPack[] = [
     access: 'free',
   },
   {
+    id: 'home',
+    title: 'Home',
+    description: 'Everyday home & household words.',
+    access: 'free',
+  },
+  {
+    id: 'food',
+    title: 'Food',
+    description: 'Food, drinks and kitchen words.',
+    access: 'free',
+  },
+  {
+    id: 'travel',
+    title: 'Travel',
+    description: 'City, transport and travel words.',
+    access: 'free',
+  },
+  {
+    id: 'nature',
+    title: 'Nature',
+    description: 'Animals, plants and nature words.',
+    access: 'free',
+  },
+  {
     id: 'custom',
     title: 'My packs',
     description: 'Create your own word lists. Requires no-ads subscription.',

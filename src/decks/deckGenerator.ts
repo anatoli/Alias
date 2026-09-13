@@ -1,4 +1,5 @@
 import {DeckCollection, ExpatCategory, GameLanguage} from './types'
+import {isPlayableCardText, normalizeCardText} from '../services/cardText'
 
 type GeneratorConfig = {
   perCategoryTarget: number
@@ -42,9 +43,7 @@ const LANG_REGEX: Record<GameLanguage, RegExp> = {
 }
 
 function normalizePhrase(s: string) {
-  return String(s || '')
-    .replace(/\s+/g, ' ')
-    .trim()
+  return normalizeCardText(s)
 }
 
 function isValidForLanguage(lang: GameLanguage, phrase: string) {
@@ -52,6 +51,7 @@ function isValidForLanguage(lang: GameLanguage, phrase: string) {
   if (!p) return false
   // Reject obvious mixing: phrase must match allowed charset.
   if (!LANG_REGEX[lang].test(p)) return false
+  if (!isPlayableCardText(p)) return false
   return true
 }
 

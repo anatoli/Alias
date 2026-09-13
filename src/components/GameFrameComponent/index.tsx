@@ -17,6 +17,8 @@ import {EXPAT_DECK, HardLevel, ExpatCategory, WordPack} from "./helpArray";
 import {getWordsForLevel} from "../../services/wordSync";
 import {getCustomPack} from "../../services/customPacks";
 import {resolveGameLanguage} from "../../services/gameSettings";
+import {isPlayableCardText} from "../../services/cardText";
+import {getThemedPackWords, isThemedPackId} from "../../services/themedPacks";
 import {t, categoryLabel} from "../../i18n";
 import {getDeckCollectionFromStorage} from "../../decks/deckStorage";
 import {GameLanguage} from "../../decks/types";
@@ -156,6 +158,10 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
             const words = custom && custom.words.length > 0 ? custom.words : [t('game.emptyCustom')]
             return words.map((text) => ({ text }))
         }
+        if (isThemedPackId(pack)) {
+            const language = resolveGameLanguage(this.props.settings.language)
+            return getThemedPackWords(pack, language).map((text) => ({ text }))
+        }
         if (pack === 'expat') {
             const selected = this.props.settings.categories
             const categories = (selected && selected.length > 0 ? selected : (Object.keys(EXPAT_DECK) as ExpatCategory[]))
@@ -166,13 +172,17 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
             if (langDeck) {
                 categories.forEach((cat) => {
                     const words: string[] = (langDeck as any)[cat] || []
-                    words.forEach((text: string) => deck.push({ category: cat, text }))
+                    words.forEach((text: string) => {
+                        if (isPlayableCardText(text)) deck.push({ category: cat, text })
+                    })
                 })
             }
             // Fallback to built-in EXPAT_DECK if storage empty
             if (deck.length < 1) {
                 categories.forEach((cat) => {
-                    EXPAT_DECK[cat].forEach((text) => deck.push({ category: cat, text }))
+                    EXPAT_DECK[cat].forEach((text) => {
+                        if (isPlayableCardText(text)) deck.push({ category: cat, text })
+                    })
                 })
             }
             return deck
@@ -232,7 +242,7 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
     getWordDisplayParts = (raw: string): string[] => {
         if (!raw || typeof raw !== 'string') return []
         const parts = raw.trim().split(/\s+/).filter((p) => p.length > 0)
-        return parts.slice(0, 3)
+        return parts.slice(0, 2)
     }
 
     adjustWordTypography = () => {
@@ -240,37 +250,56 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
         if (!el) return
 
         const parts = this.getWordDisplayParts(this.state.currentWord)
-        if (parts.length !== 1) {
-            el.style.fontSize = ''
-            el.style.whiteSpace = ''
-            el.style.wordBreak = ''
-            el.style.removeProperty('overflow-wrap')
-            el.style.lineHeight = ''
-            return
-        }
-
         const inner = el.parentElement
         if (!inner) return
 
-        const maxPx = Math.min(160, Math.max(48, Math.floor(inner.clientWidth * 0.42)))
+        const maxW = Math.max(1, inner.clientWidth)
+        const maxH = Math.max(1, Math.floor(inner.clientHeight * 0.72))
+        // Keep type large enough to read across the room / on phone
+        const minPx = Math.max(32, Math.min(48, Math.floor(maxW * 0.09)))
+        const maxPx = Math.min(96, Math.max(minPx + 8, Math.floor(maxW * 0.28)))
+
+        el.style.margin = '0'
+        el.style.padding = '0'
+        el.style.textAlign = 'center'
+        el.style.lineHeight = '1.12'
+
+        if (parts.length !== 1) {
+            // 2 words: keep large clamp via CSS, but bump if JS can do better
+            el.style.whiteSpace = 'normal'
+            el.style.wordBreak = 'normal'
+            el.style.setProperty('overflow-wrap', 'normal')
+            let size = Math.min(maxPx, Math.max(minPx, Math.floor(maxW * 0.16)))
+            el.style.fontSize = size + 'px'
+            while (size > minPx && (el.scrollWidth > maxW || el.scrollHeight > maxH)) {
+                size -= 1
+                el.style.fontSize = size + 'px'
+            }
+            return
+        }
+
+        // Single token: prefer one line; if needed wrap to 2 lines — never go below minPx
         let size = maxPx
         el.style.whiteSpace = 'nowrap'
         el.style.wordBreak = 'normal'
         el.style.setProperty('overflow-wrap', 'normal')
-        el.style.lineHeight = '1.1'
         el.style.fontSize = size + 'px'
 
-        const maxW = inner.clientWidth
-        while (size > 12 && el.scrollWidth > maxW) {
+        while (size > minPx && el.scrollWidth > maxW) {
             size -= 1
             el.style.fontSize = size + 'px'
         }
 
-        if (size <= 12 && el.scrollWidth > maxW) {
-            el.style.fontSize = '12px'
+        if (el.scrollWidth > maxW) {
             el.style.whiteSpace = 'normal'
             el.style.setProperty('overflow-wrap', 'anywhere')
             el.style.wordBreak = 'break-word'
+            size = Math.min(maxPx, Math.max(minPx, Math.floor(maxW * 0.2)))
+            el.style.fontSize = size + 'px'
+            while (size > minPx && el.scrollHeight > maxH) {
+                size -= 1
+                el.style.fontSize = size + 'px'
+            }
         }
     }
 

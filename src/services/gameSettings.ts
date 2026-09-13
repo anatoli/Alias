@@ -60,7 +60,17 @@ function normalizeTeams(raw: unknown): { name: string }[] {
 }
 
 function normalizeWordPack(raw: unknown): WordPack {
-  if (raw === 'expat' || raw === 'custom' || raw === 'classic') return raw
+  if (
+    raw === 'expat' ||
+    raw === 'custom' ||
+    raw === 'classic' ||
+    raw === 'home' ||
+    raw === 'food' ||
+    raw === 'travel' ||
+    raw === 'nature'
+  ) {
+    return raw
+  }
   return 'classic'
 }
 

@@ -254,19 +254,19 @@
     -webkit-hyphens: auto;
 }
 
-/* 2–3 слова: перенос только по пробелам, по центру */
+/* 2 words: large, wrap only on spaces */
 .game-frame__word-text--multi {
-    font-size: clamp(1.1rem, 4.2vw, 2.1rem);
-    line-height: 1.25;
+    font-size: clamp(1.6rem, 7vw, 2.6rem);
+    line-height: 1.2;
     white-space: normal;
     overflow-wrap: normal;
     word-break: normal;
     text-wrap: balance;
 }
 
-/* 1 слово: базовый размер задаёт JS; без «разъезда» ширины карточки */
+/* 1 слово: JS держит крупный кегль (не ниже ~32px) */
 .game-frame__word-text--single {
-    font-size: clamp(1.25rem, 6vw, 2.5rem);
+    font-size: clamp(2rem, 9vw, 3.4rem);
     line-height: 1.1;
 }
 
