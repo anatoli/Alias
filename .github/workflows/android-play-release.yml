@@ -1,0 +1,211 @@
+# Android release → Google Play (AAB)
+#
+# Required GitHub secrets:
+#   ANDROID_KEYSTORE_BASE64   — base64 of upload keystore (.jks/.keystore)
+#   ANDROID_KEYSTORE_PASSWORD
+#   ANDROID_KEY_ALIAS
+#   ANDROID_KEY_PASSWORD
+#   PLAY_SERVICE_ACCOUNT_JSON — Google Play Console service account JSON
+
+name: Android Play Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: 'Play track'
+        required: true
+        default: 'internal'
+        type: choice
+        options:
+          - internal
+          - alpha
+          - beta
+          - production
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install npm deps
+        run: |
+          npm ci --legacy-peer-deps || npm install --legacy-peer-deps --no-fund --no-audit
+
+      - name: Prepare Cordova project skeleton
+        run: |
+          mkdir -p www
+          if [ ! -f www/index.html ]; then
+            printf '%s\n' '<!doctype html><html><body>Alias</body></html>' > www/index.html
+          fi
+          test -f config.xml
+          head -n 1 config.xml
+
+      - name: Add Android platform
+        run: |
+          rm -rf platforms/android plugins/android.json
+          npx cordova platform add android
+
+      - name: Decode keystore + write build.json
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          KEYSTORE_PATH="$HOME/alias-upload.jks"
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$KEYSTORE_PATH"
+          test -s "$KEYSTORE_PATH"
+          # List aliases to fail fast if keystore/password wrong
+          keytool -list -keystore "$KEYSTORE_PATH" -storepass "$ANDROID_KEYSTORE_PASSWORD" | head -n 20
+
+          # Cordova signing via build.json (avoid fragile release-signing.properties)
+          python3 - <<'PY'
+          import json, os
+          cfg = {
+            "android": {
+              "release": {
+                "keystore": os.path.expanduser("~/alias-upload.jks"),
+                "storePassword": os.environ["ANDROID_KEYSTORE_PASSWORD"],
+                "alias": os.environ["ANDROID_KEY_ALIAS"],
+                "password": os.environ["ANDROID_KEY_PASSWORD"],
+                "keystoreType": "jks",
+                "packageType": "bundle"
+              }
+            }
+          }
+          with open("build.json", "w", encoding="utf-8") as f:
+            json.dump(cfg, f, indent=2)
+          print("Wrote build.json")
+          PY
+
+      - name: Install Gradle (cordova-android wrapper)
+        run: |
+          set -euo pipefail
+          sudo apt-get update -y
+          sudo apt-get install -y gradle
+          gradle --version
+
+      - name: Build signed release AAB
+        env:
+          REACT_APP_WORDS_URL: ${{ vars.REACT_APP_WORDS_URL }}
+          REACT_APP_ADMOB_INTERSTITIAL_ID: ca-app-pub-8774936490708638/4543787532
+          REACT_APP_SUBSCRIPTION_PRODUCT_ID: alias_no_ads_6m
+          DISABLE_ESLINT_PLUGIN: 'true'
+          CI: 'false'
+        run: |
+          set -euo pipefail
+          echo "Node $(node -v) npm $(npm -v)"
+          set +e
+          npx cordova build android --release --buildConfig=build.json -- --packageType=bundle 2>&1 | tee /tmp/cordova-build.log
+          BUILD_RC=${PIPESTATUS[0]}
+          set -e
+          if [ "$BUILD_RC" -ne 0 ]; then
+            echo "::error::cordova build failed (rc=$BUILD_RC)"
+            echo "===== last 120 lines of cordova build ====="
+            tail -n 120 /tmp/cordova-build.log || true
+            echo "===== java/error grep ====="
+            grep -nEi 'error:|FAILED|FAILURE|cannot find symbol|Manifest merger|What went wrong' /tmp/cordova-build.log | tail -n 80 || true
+            exit "$BUILD_RC"
+          fi
+
+          echo "===== outputs under platforms/android ====="
+          find platforms/android -type f \\( -name '*.aab' -o -name '*.apk' \\) -print || true
+          find platforms/android/app/build/outputs -type f -print 2>/dev/null || true
+
+          if ! find platforms/android -name '*.aab' -print -quit | grep -q .; then
+            echo "::error::cordova build finished but no .aab was produced"
+            exit 1
+          fi
+
+      - name: Find and verify AAB signature
+        id: aab
+        run: |
+          set -euo pipefail
+          echo "Looking for release AAB..."
+          find platforms/android -name '*.aab' -print || true
+
+          AAB=""
+          # Prefer the Cordova/Gradle release bundle path
+          shopt -s nullglob
+          release_aabs=(
+            platforms/android/app/build/outputs/bundle/release/*.aab
+            platforms/android/app/build/outputs/bundle/releaseBundle/*.aab
+          )
+          shopt -u nullglob
+          if [ ${#release_aabs[@]} -gt 0 ]; then
+            AAB="${release_aabs[0]}"
+          fi
+
+          if [ -z "$AAB" ]; then
+            # find -quit avoids SIGPIPE under pipefail (unlike find | head)
+            AAB=$(find platforms/android -name '*.aab' -print -quit || true)
+          fi
+          echo "Selected AAB: ${AAB:-<none>}"
+          if [ -z "$AAB" ] || [ ! -f "$AAB" ]; then
+            echo "::error::No AAB file found under platforms/android"
+            exit 1
+          fi
+
+          echo "path=$AAB" >> "$GITHUB_OUTPUT"
+          ls -la "$AAB"
+
+          # Prefer keytool summary (stable); jarsigner -verbose is noisy and often exits 1 on warnings
+          set +e
+          keytool -printcert -jarfile "$AAB" > /tmp/aab-cert.txt 2>&1
+          KEYTOOL_RC=$?
+          jarsigner -verify "$AAB" > /tmp/aab-verify.txt 2>&1
+          JARSIGNER_RC=$?
+          set -e
+
+          echo "===== keytool (rc=$KEYTOOL_RC) ====="
+          cat /tmp/aab-cert.txt || true
+          echo "===== jarsigner (rc=$JARSIGNER_RC) ====="
+          cat /tmp/aab-verify.txt || true
+
+          if grep -qiE 'Not a signed jar file|jar is unsigned|no manifest' /tmp/aab-verify.txt /tmp/aab-cert.txt; then
+            echo "::error::AAB appears unsigned"
+            exit 1
+          fi
+
+          if grep -qiE 'jar verified|Owner:|Signer|Certificate fingerprints' /tmp/aab-verify.txt /tmp/aab-cert.txt; then
+            echo "AAB signature OK: $AAB"
+            exit 0
+          fi
+
+          echo "::error::Could not confirm AAB signature"
+          exit 1
+
+      - name: Upload to Google Play
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.AAA.Alias
+          releaseFiles: ${{ steps.aab.outputs.path }}
+          track: ${{ github.event.inputs.track || 'internal' }}
+          status: completed
+          releaseName: ${{ github.ref_name }}
+
