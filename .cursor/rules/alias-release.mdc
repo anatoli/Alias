@@ -1,0 +1,13 @@
+---
+description: Alias release tagging and Play upload conventions
+alwaysApply: false
+globs: "{package.json,config.xml,.github/workflows/**}"
+---
+
+# Releases
+
+- Bump **both** `package.json` and `config.xml` widget `version`.
+- Ship via annotated tag `vX.Y.Z` → workflow `android-play-release.yml`.
+- CRA in CI needs `DISABLE_ESLINT_PLUGIN=true` and `CI=false`.
+- After release on `redisign`, sync `master` to the same commit.
+- Details: `docs/AGENT_CONTEXT.md` § Release checklist.

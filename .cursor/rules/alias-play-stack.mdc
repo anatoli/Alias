@@ -1,0 +1,14 @@
+---
+description: Alias canonical stack — never regress AdMob/Play/Cordova
+alwaysApply: true
+---
+
+# Alias — do not regress Play stack
+
+- Canonical branch: `redisign` (keep `master` equal to it).
+- Ads: `community-admob-plus-cordova` + GMA **25.4.0** only. Never restore `admob-plus-cordova` / **20.6.0**.
+- Keep `cordova-plugin-purchase` and product `alias_no_ads_6m`.
+- Cordova Android **15.x**. Preserve `.github/workflows/android-play-release.yml` (eslint off, AAB verify, Play upload).
+- `config.xml`: XML declaration stays `version='1.0'`; app version is the widget `version` attribute only.
+- No secrets in git (`*.jks`, credentials, service-account JSON).
+- Before Android/CI/plugin edits, read `AGENTS.md` and `docs/AGENT_CONTEXT.md`.
