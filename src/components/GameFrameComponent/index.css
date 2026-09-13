@@ -7,7 +7,7 @@
     height: 10vh;
 }
 
-.words h1, p{
+.words h1, .words p{
     line-height: 1;
 }
 .words{
@@ -16,17 +16,38 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 4em;
     background-color: var(--yellow-alias);
     margin-bottom: 50px;
     border-radius: 15px;
+    box-sizing: border-box;
+}
+
+.word-box-inner{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: clamp(14px, 3.5vw, 28px);
 }
 
 .word-category{
-    font-size: 0.35em;
+    font-size: clamp(16px, 3vw, 28px);
     line-height: 1;
     margin-bottom: 12px;
     opacity: 0.8;
+}
+
+.word-text{
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    line-height: 1.05;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    hyphens: auto;
 }
 
 .navigation h1{

@@ -36,10 +36,14 @@ interface GameFrameState {
     },
     currentWord: string
     currentCategory?: ExpatCategory
+    wordFontPx: number
 }
 
 class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameState> {
     private intervalId?: number;
+    private wordsBoxRef = React.createRef<HTMLDivElement>();
+    private wordTextRef = React.createRef<HTMLParagraphElement>();
+    private fitRaf: number | null = null;
 
     constructor(props:any) {
         super(props);
@@ -53,6 +57,7 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
             },
             currentWord: '',
             currentCategory: undefined,
+            wordFontPx: 72,
         }
     }
 
@@ -61,10 +66,14 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
    async componentDidMount() {
         this.startTimer()
         const next = await this.getNewCard()
-        this.setState({currentWord: next.text, currentCategory: next.category})
+        this.setState({currentWord: next.text, currentCategory: next.category}, this.scheduleFitWord)
     }
 
     componentWillUnmount() {
+        if (this.fitRaf !== null) {
+            window.cancelAnimationFrame(this.fitRaf)
+            this.fitRaf = null
+        }
         if (this.intervalId !== undefined) {
             window.clearInterval(this.intervalId)
             this.intervalId = undefined
@@ -73,7 +82,9 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
 
 
     componentDidUpdate(prevProps: Readonly<GameFrameProps>, prevState: Readonly<GameFrameState>, snapshot?: any) {
-
+        if (prevState.currentWord !== this.state.currentWord || prevState.currentCategory !== this.state.currentCategory) {
+            this.scheduleFitWord()
+        }
     }
 
     timeIsDone =(isPause?:boolean)=>{
@@ -105,6 +116,58 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
                 }
             })
         }, 1000)
+    }
+
+    scheduleFitWord = () => {
+        if (this.fitRaf !== null) window.cancelAnimationFrame(this.fitRaf)
+        this.fitRaf = window.requestAnimationFrame(() => {
+            this.fitRaf = null
+            this.fitWordToBox()
+        })
+    }
+
+    fitWordToBox = () => {
+        const box = this.wordsBoxRef.current
+        const textEl = this.wordTextRef.current
+        if (!box || !textEl) return
+
+        const boxW = box.clientWidth
+        const boxH = box.clientHeight
+        if (boxW <= 0 || boxH <= 0) return
+
+        const catEl = box.querySelector('.word-category')
+        const catH = catEl ? (catEl as HTMLElement).offsetHeight + 12 : 0
+        const availableH = Math.max(0, boxH - catH)
+
+        const minPx = 18
+        const maxPx = Math.max(
+            minPx,
+            Math.min(140, Math.floor(Math.min(boxW * 0.16, availableH * 0.60))),
+        )
+
+        const fits = (px: number) => {
+            textEl.style.fontSize = px + 'px'
+            const h = textEl.scrollHeight
+            const w = textEl.scrollWidth
+            if (h > availableH) return false
+            if (w > boxW) return false
+            return true
+        }
+
+        let lo = minPx
+        let hi = maxPx
+        for (let i = 0; i < 10 && lo < hi; i += 1) {
+            const mid = Math.ceil((lo + hi) / 2)
+            if (fits(mid)) lo = mid
+            else hi = mid - 1
+        }
+
+        const best = lo
+        if (best !== this.state.wordFontPx) {
+            this.setState({ wordFontPx: best })
+        } else {
+            textEl.style.fontSize = best + 'px'
+        }
     }
 
     // @ts-ignore
@@ -165,17 +228,17 @@ class GameFrameComponent extends React.PureComponent <GameFrameProps, GameFrameS
     }
 
     render() {
-        const {currentWord, currentCategory} = this.state
+        const {currentWord, currentCategory, wordFontPx} = this.state
         return(
             <div>
                 <div className={'timer'}>
                     <h1 style={{color:"white", fontSize: '4em', marginBottom: '-95px', position:"relative", zIndex:1000}}>{this.state.timer}</h1>
                     <ProgressBarComponent progress={this.state.progress} onFinishProgressBar={this.timeIsDone}></ProgressBarComponent>
                 </div>
-                <div className={'words'}>
-                    <div>
+                <div className={'words'} ref={this.wordsBoxRef}>
+                    <div className={'word-box-inner'}>
                         {currentCategory && <div className={'word-category'}>{currentCategory}</div>}
-                        <p>{currentWord}</p>
+                        <p className={'word-text'} ref={this.wordTextRef} style={{fontSize: wordFontPx}}>{currentWord}</p>
                     </div>
                 </div>
                 <div className={'navigation'}>
